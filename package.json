@@ -10,6 +10,9 @@
     "build": "cross-env NODE_ENV=development webpack --progress --hide-modules"
   },
   "dependencies": {
+    "@mapbox/assembly": "^0.22.0",
+    "element-ui": "^2.4.2",
+    "source-sans-pro": "^2.20.2",
     "vue": "^2.5.11"
   },
   "browserslist": [
@@ -20,6 +23,7 @@
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
+    "babel-plugin-component": "^1.1.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "babel-preset-stage-3": "^6.24.1",
@@ -37,11 +41,12 @@
     "datatables.net-rowgroup-dt": "^1.0.3",
     "datatables.net-rowreorder-dt": "^1.2.5",
     "datatables.net-scroller-dt": "^1.5.1",
-    "file-loader": "^1.1.4",
+    "file-loader": "^1.1.11",
     "jquery": "^3.3.1",
     "jszip": "^3.1.5",
     "pdfmake": "^0.1.37",
     "sshpk": "^1.14.2",
+    "url-loader": "^1.0.1",
     "vue-loader": "^13.0.5",
     "vue-router": "^3.0.1",
     "vue-template-compiler": "^2.4.4",
