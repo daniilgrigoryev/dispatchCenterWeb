@@ -1,9 +1,23 @@
 <template>
-  <div>
-    <input v-model="userName"/>
-    <input v-model="password"/>
-    <button v-on:click="authorize">Authorize</button>
-  </div>
+    <el-form label-width="120px" style="padding: 40px;">
+      <el-row>
+        <el-col :span="8" :offset="8">
+          <el-form-item label="Логин:">
+            <el-input placeholder="" v-model="userName"></el-input>
+          </el-form-item>
+
+          <el-form-item label="Пароль:">
+            <el-input type="password" placeholder="" v-model="password"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="8" :offset="12">
+          <el-button v-on:click="authorize" round type="primary">Войти</el-button>
+        </el-col>
+      </el-row>
+    </el-form>
 </template>
 
 <script>
@@ -15,7 +29,7 @@
 
   export default {
     name: 'Authorization',
-    data () {
+    data() {
       return {
         userName: '',
         password: ''

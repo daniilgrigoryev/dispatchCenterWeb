@@ -11,5 +11,13 @@
 </script>
 
 <style>
-
+  body {
+    /*font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, SimSun, sans-serif;*/
+    font-family: 'Source Sans Pro', sans-serif;
+    /*background: linear-gradient(135deg, rgba(22,32,48,1) 0%,rgba(22,32,48,1) 100%);*/
+    /*background: #1c2733;*/
+    background: #282F37;
+    min-height: 100vh;
+    color: #64b2e4;
+  }
 </style>

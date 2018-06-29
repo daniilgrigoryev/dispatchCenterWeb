@@ -4,8 +4,8 @@
     <input type="date" v-model="dateBeg"/>
     <input type="date" v-model="dateEnd"/>
     <ul>
-      <li v-for="monitor in monitors">
-        <button v-on:click="getNext(monitor.id)">{{ monitor.name }}</button>
+      <li v-for="monitor in monitors" class="mt24">
+        <el-button v-on:click="getNext(monitor.id)" round type="primary">{{ monitor.name }}</el-button>
       </li>
     </ul>
   </div>
