@@ -42,7 +42,7 @@
           <div class='col col--3'>
             <div class="dashboard-widget">
               <h3 class="dashboard-widget--title">Уровень работоспособности</h3>
-              <div id="pieChart" style="width: 100%; height: 300px;"></div>
+              <div id="pieChart" style="width: 100%; height: 180px;"></div>
             </div>
 
             <div class="dashboard-widget">
@@ -116,7 +116,7 @@
               <!--/Плашка малого аларма-->
 
               <!--<div id="alarmRules">-->
-                <!--<ul id="alarmRulesList"></ul>-->
+              <!--<ul id="alarmRulesList"></ul>-->
               <!--</div>-->
             </div>
           </div>
@@ -127,21 +127,21 @@
             </div>
 
 
-              <!--Таблица-->
-              <div id="table" style="width: 100%; height:45vh;">
+            <!--Таблица-->
+            <div id="table" style="width: 100%; height:45vh;">
               <table id="example" class="display nowrap" style="width:100%; height: inherit;">
-              <thead>
-              <tr>
-              <th>Наименование</th>
-              <th>Предупреждений</th>
-              <th>Прошло времени после первого</th>
-              <th>Прошло времени после последнего</th>
-              <th>Примечание</th>
-              </tr>
-              </thead>
+                <thead>
+                <tr>
+                  <th>Наименование</th>
+                  <th>Предупреждений</th>
+                  <th>Прошло времени после первого</th>
+                  <th>Прошло времени после последнего</th>
+                  <th>Примечание</th>
+                </tr>
+                </thead>
               </table>
-              </div>
-              <!--/Таблица-->
+            </div>
+            <!--/Таблица-->
 
 
           </div>
@@ -151,16 +151,16 @@
 
       </el-main>
       <!--<el-footer>-->
-        <!--<div class='grid'>-->
-          <!--<div class='col col&#45;&#45;4'>-->
-            <!--<h3 class="dashboard-widget&#45;&#45;title">Поиск объектов</h3>-->
+      <!--<div class='grid'>-->
+      <!--<div class='col col&#45;&#45;4'>-->
+      <!--<h3 class="dashboard-widget&#45;&#45;title">Поиск объектов</h3>-->
 
-            <!--<el-input placeholder="Поиск...">-->
-              <!--<el-button slot="append" type="primary" icon="el-icon-search"></el-button>-->
-            <!--</el-input>-->
-          <!--</div>-->
-          <!--<div class='col col&#45;&#45;8'></div>-->
-        <!--</div>-->
+      <!--<el-input placeholder="Поиск...">-->
+      <!--<el-button slot="append" type="primary" icon="el-icon-search"></el-button>-->
+      <!--</el-input>-->
+      <!--</div>-->
+      <!--<div class='col col&#45;&#45;8'></div>-->
+      <!--</div>-->
       <!--</el-footer>-->
     </el-container>
   </el-container>
@@ -246,7 +246,7 @@
 
   .dashboard-alarm-primary {
     padding: 5px 10px;
-    color: #52093cde;
+    color: #3d3132;
   }
 
   .dashboard-alarm-primary--title {
@@ -260,15 +260,15 @@
   }
 
   .dashboard-alarm--warning {
-    background: linear-gradient(to left, rgb(254, 140, 0), rgb(248, 54, 0));
+    background: linear-gradient(to left, #e9a25c, #ed8f03); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   }
 
   .dashboard-alarm--error {
-    background: linear-gradient(to left, rgb(237, 33, 58), rgb(147, 41, 30));
+    background: linear-gradient(to left, rgb(237, 33, 58), rgb(115, 34, 27));
   }
 
   .dashboard-alarm--info {
-    background: linear-gradient(to right, rgb(51, 45, 75), rgb(146, 141, 171));
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   }
 
 </style>
@@ -284,6 +284,9 @@
   import 'datatables.net-scroller-dt/css/scroller.dataTables.css'
   import 'datatables.net-dt/js/dataTables.dataTables.js'
   import 'datatables.net-scroller-dt/js/scroller.dataTables.js'
+
+  const THEME_NAME = 'infographic';
+  const THEME_PATH = 'dist/json';
 
   export default {
     name: "MonitorViewData",
@@ -318,10 +321,18 @@
       }
     },
     mounted: function () {
-      this.drawLineChart(this.monitorViewData);
-      this.fillTopObjects(this.monitorViewData);
-      this.drawPieChart(this.monitorViewData);
-      this.fillRules(this.monitorViewData);
+      fetch(`${THEME_PATH}/${THEME_NAME}.json`)
+        .then(response => {
+          return response.json();
+        })
+        .then(json => {
+          echarts.registerTheme(THEME_NAME, json);
+
+          this.drawLineChart(this.monitorViewData);
+          this.fillTopObjects(this.monitorViewData);
+          this.drawPieChart(this.monitorViewData);
+          this.fillRules(this.monitorViewData);
+        });
     },
     methods: {
       getNext: function () {
@@ -334,13 +345,12 @@
       },
       drawPieChart: function (data) {
         // based on prepared DOM, initialize echarts instance
-        let myChart = echarts.init(document.getElementById('pieChart'));
         let levels = [];
         let legend = [];
         let levelsCount = {};
         let pie = data.alarms;
         for (let i = 0; i < pie.length; i++) {
-          let name = 'Уровень ' + pie[i].level;
+          let name = 'Уровень ' + 1;
           let name1 = 'Уровень ' + 2;
           let name2 = 'Уровень ' + 3;
           let name3 = 'Уровень ' + 4;
@@ -361,16 +371,16 @@
           let level2 = levelsCount[name2];
           let level3 = levelsCount[name3];
           if (undefined === level) {
-            levelsCount[name] = 0;
+            levelsCount[name] = 10;
           }
           if (undefined === level1) {
-            levelsCount[name1] = 178;
+            levelsCount[name1] = 300;
           }
           if (undefined === level2) {
-            levelsCount[name2] = 345;
+            levelsCount[name2] = 600;
           }
           if (undefined === level3) {
-            levelsCount[name3] = 232;
+            levelsCount[name3] = 300;
           }
           levelsCount[name] = ++levelsCount[name];
         }
@@ -383,51 +393,34 @@
         }
 
         let option = {
+          roseType: 'radius',
           tooltip: {
             trigger: 'item',
             formatter: "{a} <br/>{b}: {c} ({d}%)"
-          },
-          legend: {
-            orient: 'horizontal',
-            x: 'center',
-            y: 'bottom',
-            textStyle: {
-              fontSize: '13',
-              color: 'rgba(255, 255, 255, 0.8)'
-            },
-            data: legend
           },
 
           series: [
             {
               name: 'Уровни:',
               type: 'pie',
-              radius: ['65%', '75%'],
+              radius: [20, 70],
               avoidLabelOverlap: false,
-              label: {
-                normal: {
-                  show: false,
-                  position: 'center'
-                },
-                emphasis: {
-                  show: true,
-                  textStyle: {
-                    fontSize: '17',
-                    fontWeight: 'bold'
-                  }
-                }
-              },
-              labelLine: {
-                normal: {
-                  show: false
-                }
-              },
-              data: levels
+              data: levels,
+              itemStyle: {
+                shadowBlur: 100,
+                shadowOffsetX: 10,
+                shadowOffsetY: 10,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
             }
           ]
         };
 
-        myChart.setOption(option);
+        echarts
+          .init(document.getElementById('pieChart'), THEME_NAME)
+          .setOption(option);
+
+
       },
       drawLineChart: function (data) {
         let sortNumber = function (a, b) {
@@ -463,7 +456,7 @@
 
         } else {
           // based on prepared DOM, initialize echarts instance
-          let myChart = echarts.init(document.getElementById('lineChart'));
+          // let myChart = echarts.init(document.getElementById('lineChart'));
           let legend = [];
           let series = [];
           let xAxis = {
@@ -497,7 +490,18 @@
                 name: legend[j],
                 type: 'line',
                 lineStyle: {
-                  width: 4,
+                  width: 2,
+                },
+                areaStyle: {
+                  normal: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                      offset: 0,
+                      color: 'rgba(255, 158, 68, 0.05)'
+                    }, {
+                      offset: 1,
+                      color: 'rgba(255, 70, 131, 0.05)'
+                    }])
+                  }
                 },
                 data: []
               };
@@ -580,8 +584,12 @@
             series: series
           };
 
+          echarts
+            .init(document.getElementById('lineChart'), THEME_NAME)
+            .setOption(option);
+
           // use configuration item and data specified to show chart
-          myChart.setOption(option);
+          // myChart.setOption(option);
         }
       },
       fillTopObjects: function (data) {
