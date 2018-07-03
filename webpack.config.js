@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/main.js',
@@ -29,19 +30,20 @@ module.exports = {
         loader: 'babel-loader', query: {compact: false},
         exclude: /node_modules/
       },
-      // {
-      //   test: /\.(png|jpg|gif|svg)$/,
-      //   loader: 'file-loader',
-      //   options: {
-      //     name: '[name].[ext]?[hash]'
-      //   }
-      // },
+      {
+        test: /\.json$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+          outputPath: 'json/'
+        }
+      },
       {
         test: /\.(png|jpg|jpeg|gif|otf|eot|ttf|woff|woff2|svg|svgz)(\?.+)?$/,
         use: [{
           loader: 'url-loader',
           options: {
-            limit: 5000
+            limit: 1024
           }
         }]
       }
@@ -54,6 +56,8 @@ module.exports = {
     extensions: ['*', '.js', '.vue', '.json']
   },
   devServer: {
+    host: '0.0.0.0',
+    port: 9191,
     historyApiFallback: true,
     noInfo: true,
     overlay: true
@@ -65,7 +69,13 @@ module.exports = {
   plugins: [
     new webpack.LoaderOptionsPlugin({
       minimize: false
-    })
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: 'src/assets/echart-themes/',
+        to: 'json/',
+      }
+    ], {})
   ]
 };
 
