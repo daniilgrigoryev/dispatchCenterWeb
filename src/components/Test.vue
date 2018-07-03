@@ -14,7 +14,7 @@
       return {}
     },
     beforeCreate: function () {
-      debugger;
+      // debugger;
       let currentComponent;
       let componentsRoute = JSON.parse(sessionStorage.getItem(sessionStorage.getItem('wid')));
       currentComponent = funcUtils.getCurrentComponent(componentsRoute);

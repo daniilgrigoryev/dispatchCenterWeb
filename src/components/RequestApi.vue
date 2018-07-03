@@ -9,7 +9,7 @@
     },
     methods: {
       sendRequest: (type, body) => {
-        debugger;
+        // debugger;
         let json = JSON.stringify(body);
         if (type === ConstantUtils.REQUEST_TYPE_HTTP) {
           this.__sendHttpRequest__(json);
@@ -18,7 +18,7 @@
         }
       },
       __sendSocketRequest__: (body) => {
-        debugger;
+        // debugger;
         if (undefined === this.socketInstance || null === this.socketInstance) {
           this.socketInstance = new WebSocket(ConstantUtils.WS_URL);
           // When a connection is made
@@ -29,7 +29,7 @@
           let self = this;
           // When data is received
           this.socketInstance.onmessage = (event) => {
-            debugger;
+            // debugger;
             let t = self;
             console.log(event.data);
           };
@@ -52,7 +52,7 @@
         this.socketInstance.send(body);
       },
       __sendHttpRequest__: (body) => {
-        debugger;
+        // debugger;
         let xhr = new XMLHttpRequest();
         xhr.open('POST', ConstantUtils.HTTP_URL, false);
         xhr.setRequestHeader('Content-Type', 'application/json');

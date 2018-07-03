@@ -24,7 +24,7 @@
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorDict.bean, 'getMonitorDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-      debugger;
+      // debugger;
       if (eventResponse.status === 200) {
         this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
       }

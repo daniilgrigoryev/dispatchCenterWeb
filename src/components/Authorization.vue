@@ -38,7 +38,7 @@
 
     methods: {
       authorize: function () {
-        debugger;
+        // debugger;
         if (this.userName !== '' && this.password !== '') {
           let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, this.userName, null, this.password);
           let requestHead = new RequestEntity.RequestHead(null, sessionStorage.getItem('wid'), null, null, 'login');
