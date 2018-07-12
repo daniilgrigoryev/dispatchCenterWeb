@@ -35,11 +35,12 @@ let vue = new Vue({
     if (null === sessionStorage.getItem('wid')) {
       sessionStorage.setItem('wid', guid());
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
+      sessionStorage.setItem('path', '[{"srcPath":"Authorization","current":true}]');
     }
     localStorage.setItem('lastActive', JSON.stringify(new Date().getTime()));
     if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
       let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
-      RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_WS, temp, this);
+      RequstApi.sendSocketRequest(temp, this);
     }
   },
   mounted: function () {
@@ -50,19 +51,25 @@ let vue = new Vue({
       funcUtils.removeAllComponents();
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'logout');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
-      let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-      if (eventResponse.status === 200) {
-        let data = eventResponse.response;
-        if (data.length > 0) {
-          let dataJson = JSON.parse(data);
-          if (dataJson.method === 'logout') {
-            localStorage.removeItem('auth');
-            localStorage.removeItem('sid');
-            localStorage.removeItem('lastActive');
-            this.$router.push('/');
+      RequstApi.sendHttpRequest(requestParam)
+        .then(eventResponse => {
+          if (eventResponse.status === 200) {
+            let data = eventResponse.response;
+            if (data.length > 0) {
+              let dataJson = JSON.parse(data);
+              if (dataJson.method === 'logout') {
+                localStorage.removeItem('auth');
+                localStorage.removeItem('sid');
+                localStorage.removeItem('lastActive');
+                sessionStorage.setItem('path', '[{"srcPath":"Authorization","current":true}]');
+                this.$router.push('/');
+              }
+            }
           }
-        }
-      }
+        })
+        .catch(eventResponse => {
+          alert(eventResponse.message);
+        });
     },
     activateTimer: function () {
       debugger;

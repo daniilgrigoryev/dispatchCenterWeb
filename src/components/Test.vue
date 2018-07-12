@@ -18,9 +18,6 @@
       let currentComponent;
       let componentsRoute = JSON.parse(sessionStorage.getItem(sessionStorage.getItem('wid')));
       currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-      if (currentComponent === null) {
-        currentComponent = funcUtils.getNextComponent(this.$store.state.monitorViewData.bean);
-      }
       /*if (undefined !== props || null !== props) {
 
       } else {
@@ -32,8 +29,9 @@
         this.$root.logout();
       },
       getPrev: function () {
-        funcUtils.getPrevComponent();
-        this.$router.push('/monitorViewData');
+        funcUtils.getPrevComponent(() => {
+          funcUtils.getPrevPage(this.$router, 'MonitorViewData');
+        });
       }
     }
   }

@@ -1,5 +1,7 @@
 <template>
   <el-container>
+    <button style="position: relative;" v-on:click="getPrev">Prev</button>
+    <button style="position: relative;" v-on:click="getNext">Next</button>
     <el-aside width="80px">
       <el-row>
         <el-col class="flex-parent flex-parent--center-main mt24">
@@ -291,17 +293,17 @@
   export default {
     name: "MonitorViewData",
     data() {
-      return {
-        monitorViewData: this.$store.state.monitorViewData.data
+      return {}
+    },
+    computed: {
+      monitorViewData: function() {
+        return this.$store.state.monitorViewData.data
       }
     },
     beforeCreate: function () {
       let currentComponent;
       let componentsRoute = JSON.parse(sessionStorage.getItem(sessionStorage.getItem('wid')));
       currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-      if (currentComponent === null) {
-        currentComponent = funcUtils.getNextComponent(this.$store.state.monitorViewData.bean);
-      }
       this.$store.dispatch('monitorDictSetCid', currentComponent.cid);
       let wid = sessionStorage.getItem('wid');
       let method;
@@ -315,10 +317,19 @@
       }
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);
-      let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-      if (eventResponse.status === 200) {
-        this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
-      }
+      RequstApi.sendHttpRequest(requestParam)
+        .then(eventResponse => {
+          if (eventResponse.status === 200) {
+            this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+            this.drawLineChart(this.monitorViewData);
+            this.fillTopObjects(this.monitorViewData);
+            this.drawPieChart(this.monitorViewData);
+            this.fillRules(this.monitorViewData);
+          }
+        })
+        .catch(eventResponse => {
+          alert(eventResponse.message);
+        });
     },
     mounted: function () {
       fetch(`${THEME_PATH}/${THEME_NAME}.json`)
@@ -327,21 +338,18 @@
         })
         .then(json => {
           echarts.registerTheme(THEME_NAME, json);
-
-          this.drawLineChart(this.monitorViewData);
-          this.fillTopObjects(this.monitorViewData);
-          this.drawPieChart(this.monitorViewData);
-          this.fillRules(this.monitorViewData);
         });
     },
     methods: {
       getNext: function () {
-        funcUtils.getNextComponent(this.$store.state.monitorViewData.bean);
-        this.$router.push('/test');
+        funcUtils.getNextComponent(this.$store.state.monitorViewData.bean, () => {
+          funcUtils.getNextPage(this.$router, 'Test');
+        });
       },
       getPrev: function () {
-        funcUtils.getPrevComponent();
-        this.$router.push('/monitorDict');
+        funcUtils.getPrevComponent(() => {
+          funcUtils.getPrevPage(this.$router, 'MonitorDict');
+        });
       },
       drawPieChart: function (data) {
         // based on prepared DOM, initialize echarts instance

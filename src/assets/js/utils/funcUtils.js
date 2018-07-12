@@ -1,4 +1,3 @@
-import * as ConstantUtils from './constantUtils';
 import * as RequestEntity from './../api/requestEntity';
 import {RequstApi} from './../api/requestApi';
 import $ from "jquery";
@@ -9,10 +8,11 @@ export function guid() {
       .toString(16)
       .substring(1);
   }
+
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
-export function webGlId () {
+export function webGlId() {
   String.prototype.hashCode = function () {
     let hash = 0;
     if (this.length === 0)
@@ -50,7 +50,7 @@ export function getCurrentComponent(componentArr) {
   }
 }
 
-export function getNextComponent(beanName) {
+export function getNextComponent(beanName, callback) {
   debugger;
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
@@ -64,33 +64,42 @@ export function getNextComponent(beanName) {
   if (null === currentComponent || undefined === currentComponent) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, beanName, null);
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-    if (eventResponse.status === 200) {
-      let data = eventResponse.response;
-      if (data.length > 0) {
-        let dataJson = JSON.parse(data);
-        let respData = dataJson.data;
-        let respError = dataJson.error;
-        if (null !== respData) {
-          if (dataJson.method === 'addCID') {
-            currentComponent = {
-              'count': componentsRoute.length,
-              'cid': respData.cid,
-              'current': true
-            };
-            componentsRoute.push(currentComponent);
-            sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
-            return currentComponent;
+    RequstApi.sendHttpRequest(requestParam)
+      .then(eventResponse => {
+        if (eventResponse.status === 200) {
+          let data = eventResponse.response;
+          if (data.length > 0) {
+            let dataJson = JSON.parse(data);
+            let respData = dataJson.data;
+            let respError = dataJson.error;
+            if (null !== respData) {
+              if (dataJson.method === 'addCID') {
+                currentComponent = {
+                  'count': componentsRoute.length,
+                  'href': window.location.href,
+                  'cid': respData.cid,
+                  'current': true
+                };
+                componentsRoute.push(currentComponent);
+                sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
+                // return currentComponent;
+                if (undefined !== callback) {
+                  callback();
+                }
+              }
+            } else {
+              alert(respError.errorMsg);
+            }
           }
-        } else {
-          alert(respError.errorMsg);
         }
-      }
-    }
+      })
+      .catch(eventResponse => {
+        alert(eventResponse.message);
+      });
   }
 }
 
-export function getPrevComponent() {
+export function getPrevComponent(callback) {
   debugger;
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
@@ -99,26 +108,34 @@ export function getPrevComponent() {
     currentComponent = getCurrentComponent(componentsRoute);
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-    if (eventResponse.status === 200) {
-      let data = eventResponse.response;
-      if (data.length > 0) {
-        let dataJson = JSON.parse(data);
-        let respError = dataJson.error;
-        if (dataJson.method === 'removeCID') {
-          componentsRoute.splice(currentComponent.count, 1);
-          if (componentsRoute.length > 0) {
-            currentComponent = componentsRoute[currentComponent.count - 1];
-            currentComponent.current = true;
+    RequstApi.sendHttpRequest(requestParam)
+      .then(eventResponse => {
+        if (eventResponse.status === 200) {
+          let data = eventResponse.response;
+          if (data.length > 0) {
+            let dataJson = JSON.parse(data);
+            let respError = dataJson.error;
+            if (dataJson.method === 'removeCID') {
+              componentsRoute.splice(currentComponent.count, 1);
+              if (componentsRoute.length > 0) {
+                currentComponent = componentsRoute[currentComponent.count - 1];
+                currentComponent.current = true;
+              }
+              sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
+              // return currentComponent;
+              if (undefined !== callback) {
+                callback();
+              }
+            }
+            if (null !== respError) {
+              alert(respError.errorMsg);
+            }
           }
-          sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
-          return currentComponent;
         }
-        if (null !== respError) {
-          alert(respError.errorMsg);
-        }
-      }
-    }
+      })
+      .catch(eventResponse => {
+        alert(eventResponse.message);
+      });
   }
 }
 
@@ -128,7 +145,46 @@ export function removeAllComponents() {
   for (let i = 0; i < componentsRoute.length; i++) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, componentsRoute[i].cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
+    RequstApi.sendHttpRequest(requestParam)
+      .then(eventResponse => {})
+      .catch(eventResponse => {
+        alert(eventResponse.message);
+      });
   }
   sessionStorage.removeItem(wid);
+}
+
+export function getCurrentPage(path) {
+  let currentPage = null;
+  if (null === path || path.length === 0) {
+    return currentPage;
+  }
+  for (let i = 0; i < path.length; i++) {
+    let page = path[i];
+    if (page.current) {
+      currentPage = page;
+      return currentPage;
+    }
+  }
+}
+
+export function getNextPage(router, pageName, params) {
+  let path = JSON.parse(sessionStorage.getItem('path'));
+  let currPage = getCurrentPage(path);
+  currPage.current = false;
+  path.push({
+    "srcPath": pageName,
+    "current": true,
+    "params": params
+  });
+  sessionStorage.setItem('path', JSON.stringify(path));
+  router.push({name: pageName, params});
+}
+
+export function getPrevPage(router, pageName, params) {
+  let path = JSON.parse(sessionStorage.getItem('path'));
+  path.splice(path.length - 1, 1);
+  path[path.length - 1].current = true;
+  sessionStorage.setItem('path', JSON.stringify(path));
+  router.push({name: pageName, params});
 }

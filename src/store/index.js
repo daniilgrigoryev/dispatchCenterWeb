@@ -3,8 +3,6 @@ import Vuex from 'vuex';
 import authorization from './modules/authorization';
 import monitorViewData from './modules/monitorViewData';
 import monitorDict from './modules/monitorDict';
-import * as ConstantUtils from './../assets/js/utils/constantUtils';
-import createPersistedState from 'vuex-persistedstate'
 
 Vue.use(Vuex);
 
@@ -26,9 +24,10 @@ const store = new Vuex.Store({
           payload.selfStore;
         let dataJson = JSON.parse(data);
         if (dataJson.method === 'ping') {
+          let selfStorePing = payload.selfStore;
           let secondsInactive = (new Date().getTime() - JSON.parse(localStorage.getItem('lastActive'))) / 1000 / 60;
           if (secondsInactive > 15) {
-            selfStore.logout();
+            selfStorePing.logout();
           }
           return;
         }

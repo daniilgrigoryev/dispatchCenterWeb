@@ -5,11 +5,13 @@ import MonitorViewData from '../components/MonitorViewData'
 import MonitorDict from '../components/MonitorDict'
 import Test from '../components/Test'
 import PageNotFound from '../components/404'
+import * as funcUtils from "./../assets/js/utils/funcUtils";
 
 Vue.use(Router);
 
 const router = new Router({
   mode: 'history',
+  hashbang: false,
   routes: [
     {
       path: '/',
@@ -41,14 +43,18 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.name === null) {
+  let path = JSON.parse(sessionStorage.getItem('path'));
+  let currentPage = funcUtils.getCurrentPage(path);
+  if (null === to.name) {
     next('/404');
-  } else if (to.name === 'Authorization') {
+  } else if (null === currentPage) {
+    next('/');
+  } else if (to.name === 'Authorization' && currentPage.srcPath === 'Authorization') {
     next();
-  } else if (localStorage.getItem('auth') === 'true') {
+  } else if (localStorage.getItem('auth') === 'true' && currentPage.srcPath === to.name) {
     next();
   } else {
-    next('/');
+    next({name: currentPage.srcPath});
   }
 });
 

@@ -23,17 +23,26 @@
       let wid = sessionStorage.getItem('wid');
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorDict.bean, 'getMonitorDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
-      let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-      // debugger;
-      if (eventResponse.status === 200) {
-        this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
-      }
+      RequstApi.sendHttpRequest(requestParam)
+        .then(eventResponse => {
+          // debugger;
+          if (eventResponse.status === 200) {
+            this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+          }
+        })
+        .catch(eventResponse => {
+          alert(eventResponse.message);
+        });
     },
     data() {
       return {
-        monitors: this.$store.state.monitorDict.data,
         dateBeg: new Date(),
         dateEnd: new Date()
+      }
+    },
+    computed: {
+      monitors: function() {
+        return this.$store.state.monitorDict.data
       }
     },
     methods: {
@@ -52,8 +61,9 @@
         if (this.dateEnd !== null) {
           params.dateEnd = new Date(this.dateEnd).getTime();
         }
-        funcUtils.getNextComponent(this.$store.state.monitorViewData.bean);
-        this.$router.push({name: 'MonitorViewData', params});
+        funcUtils.getNextComponent(this.$store.state.monitorViewData.bean, () => {
+          funcUtils.getNextPage(this.$router, 'MonitorViewData', params);
+        });
       }
     }
   }

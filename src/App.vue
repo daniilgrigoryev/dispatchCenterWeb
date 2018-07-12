@@ -1,12 +1,16 @@
 <template>
   <div id="app">
+    <Indicator/>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
+  import Indicator from './components/Indicator.vue';
+
   export default {
-    name: 'app'
+    name: 'app',
+    components: { Indicator }
   }
 </script>
 

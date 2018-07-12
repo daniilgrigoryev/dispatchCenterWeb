@@ -43,32 +43,37 @@
           let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, this.userName, null, this.password);
           let requestHead = new RequestEntity.RequestHead(null, sessionStorage.getItem('wid'), null, null, 'login');
           let requestParam = new RequestEntity.RequestParam(requestHead, loginParams);
-          let eventResponse = RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_HTTP, requestParam);
-          if (eventResponse.status === 200) {
-            let data = eventResponse.response;
-            if (data.length > 0) {
-              let dataJson = JSON.parse(data);
-              let respData = dataJson.data;
-              let respError = dataJson.error;
-              if (null !== respData) {
-                if (dataJson.method === 'login') {
-                  localStorage.setItem('auth', 'true');
-                  localStorage.setItem('sid', respData.sid);
-                  if (null === sessionStorage.getItem(sessionStorage.getItem('wid'))) {
-                    sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
+          RequstApi.sendHttpRequest(requestParam)
+            .then(eventResponse => {
+              if (eventResponse.status === 200) {
+                let data = eventResponse.response;
+                if (data.length > 0) {
+                  let dataJson = JSON.parse(data);
+                  let respData = dataJson.data;
+                  let respError = dataJson.error;
+                  if (null !== respData) {
+                    if (dataJson.method === 'login') {
+                      localStorage.setItem('auth', 'true');
+                      localStorage.setItem('sid', respData.sid);
+                      if (null === sessionStorage.getItem(sessionStorage.getItem('wid'))) {
+                        sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
+                      }
+                      this.$root.activateTimer();
+                    }
+                  } else {
+                    alert(respError.errorMsg);
                   }
-                  this.$root.activateTimer();
                 }
-              } else {
-                alert(respError.errorMsg);
               }
-            }
-          }
-          if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
-            let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
-            RequstApi.sendRequest(ConstantUtils.REQUEST_TYPE_WS, temp, this);
-            this.$router.push('/monitorDict');
-          }
+              if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
+                let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
+                RequstApi.sendSocketRequest(temp, this);
+                funcUtils.getNextPage(this.$router, 'MonitorDict');
+              }
+            })
+            .catch(eventResponse => {
+              alert(eventResponse.message);
+            });
         } else {
           let message = '';
           if (this.userName === '') {
