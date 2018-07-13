@@ -169,6 +169,7 @@ export class RequstApi {
         url: ConstantUtils.HTTP_URL,
         type: 'post',
         async: true,
+        timeout: 120000,
         contentType: 'application/json',
         data: JSON.stringify(body),
         beforeSend: () => {
@@ -196,6 +197,8 @@ export class RequstApi {
             let target = document.getElementById('indicator');
             $('#indicator').show();
             spinner = new Spinner(opts).spin(target);
+          } else {
+            $('#fakeIndicator').show();
           }
         },
         success: (data) => {
@@ -213,6 +216,8 @@ export class RequstApi {
           if (withSpinner) {
             spinner.stop();
             $('#indicator').hide();
+          } else {
+            $('#fakeIndicator').hide();
           }
         }
       });

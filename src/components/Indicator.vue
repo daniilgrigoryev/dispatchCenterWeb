@@ -1,5 +1,8 @@
 <template>
-  <div id="indicator"></div>
+  <div>
+    <div id="indicator"></div>
+    <div id="fakeIndicator"></div>
+  </div>
 </template>
 
 <script>
@@ -17,6 +20,14 @@
     opacity: 0.8;
     z-index: 1000000000;
     background: grey;
+  }
+
+  #fakeIndicator {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: 1100000000;
   }
 
   @keyframes spinner-line-fade-more {
