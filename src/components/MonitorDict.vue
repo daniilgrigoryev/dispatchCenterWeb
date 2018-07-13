@@ -23,7 +23,7 @@
       let wid = sessionStorage.getItem('wid');
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorDict.bean, 'getMonitorDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
-      RequstApi.sendHttpRequest(requestParam)
+      RequstApi.sendHttpRequest(requestParam, true)
         .then(eventResponse => {
           // debugger;
           if (eventResponse.status === 200) {

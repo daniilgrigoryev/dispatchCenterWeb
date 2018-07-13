@@ -35,7 +35,7 @@ let vue = new Vue({
     if (null === sessionStorage.getItem('wid')) {
       sessionStorage.setItem('wid', guid());
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
-      sessionStorage.setItem('path', '[{"srcPath":"Authorization","current":true}]');
+      sessionStorage.setItem('path', '[{"routeName":"Authorization","current":true}]');
     }
     localStorage.setItem('lastActive', JSON.stringify(new Date().getTime()));
     if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
@@ -48,7 +48,7 @@ let vue = new Vue({
   },
   methods: {
     logout: function () {
-      funcUtils.removeAllComponents();
+      funcUtils.removeAllComponents(false);
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'logout');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam)
@@ -61,7 +61,7 @@ let vue = new Vue({
                 localStorage.removeItem('auth');
                 localStorage.removeItem('sid');
                 localStorage.removeItem('lastActive');
-                sessionStorage.setItem('path', '[{"srcPath":"Authorization","current":true}]');
+                sessionStorage.setItem('path', '[{"routeName":"Authorization","current":true}]');
                 this.$router.push('/');
               }
             }

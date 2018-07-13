@@ -50,7 +50,7 @@ export function getCurrentComponent(componentArr) {
   }
 }
 
-export function getNextComponent(beanName, callback) {
+export function getNextComponent(beanName, callback, withSpinner) {
   debugger;
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
@@ -64,7 +64,7 @@ export function getNextComponent(beanName, callback) {
   if (null === currentComponent || undefined === currentComponent) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, beanName, null);
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam)
+    RequstApi.sendHttpRequest(requestParam, withSpinner)
       .then(eventResponse => {
         if (eventResponse.status === 200) {
           let data = eventResponse.response;
@@ -88,7 +88,9 @@ export function getNextComponent(beanName, callback) {
                 }
               }
             } else {
-              alert(respError.errorMsg);
+              if (null !== respError) {
+                alert(respError.errorMsg);
+              }
             }
           }
         }
@@ -99,7 +101,7 @@ export function getNextComponent(beanName, callback) {
   }
 }
 
-export function getPrevComponent(callback) {
+export function getPrevComponent(callback, withSpinner) {
   debugger;
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
@@ -108,7 +110,7 @@ export function getPrevComponent(callback) {
     currentComponent = getCurrentComponent(componentsRoute);
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam)
+    RequstApi.sendHttpRequest(requestParam, withSpinner)
       .then(eventResponse => {
         if (eventResponse.status === 200) {
           let data = eventResponse.response;
@@ -139,13 +141,13 @@ export function getPrevComponent(callback) {
   }
 }
 
-export function removeAllComponents() {
+export function removeAllComponents(withSpinner) {
   let wid = sessionStorage.getItem('wid');
   let componentsRoute = JSON.parse(sessionStorage.getItem(wid));
   for (let i = 0; i < componentsRoute.length; i++) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, componentsRoute[i].cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam)
+    RequstApi.sendHttpRequest(requestParam, withSpinner)
       .then(eventResponse => {})
       .catch(eventResponse => {
         alert(eventResponse.message);
@@ -173,9 +175,9 @@ export function getNextPage(router, pageName, params) {
   let currPage = getCurrentPage(path);
   currPage.current = false;
   path.push({
-    "srcPath": pageName,
-    "current": true,
-    "params": params
+    'routeName': pageName,
+    'current': true,
+    'params': params
   });
   sessionStorage.setItem('path', JSON.stringify(path));
   router.push({name: pageName, params});

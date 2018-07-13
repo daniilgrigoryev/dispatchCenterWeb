@@ -45,16 +45,20 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   let path = JSON.parse(sessionStorage.getItem('path'));
   let currentPage = funcUtils.getCurrentPage(path);
-  if (null === to.name) {
+  if (null === to || null === to.name) {
     next('/404');
   } else if (null === currentPage) {
-    next('/');
-  } else if (to.name === 'Authorization' && currentPage.srcPath === 'Authorization') {
+    if (null === sessionStorage.getItem('wid')) {
+      next();
+    } else {
+      next('/');
+    }
+  } else if (to.name === 'Authorization' && currentPage.routeName === 'Authorization') {
     next();
-  } else if (localStorage.getItem('auth') === 'true' && currentPage.srcPath === to.name) {
+  } else if (localStorage.getItem('auth') === 'true' && currentPage.routeName === to.name) {
     next();
   } else {
-    next({name: currentPage.srcPath});
+    next({name: currentPage.routeName});
   }
 });
 

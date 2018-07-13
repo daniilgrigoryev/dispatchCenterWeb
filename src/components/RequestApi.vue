@@ -54,7 +54,7 @@
       __sendHttpRequest__: (body) => {
         // debugger;
         let xhr = new XMLHttpRequest();
-        xhr.open('POST', ConstantUtils.HTTP_URL, false);
+        xhr.open('POST', ConstantUtils.HTTP_URL);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = (e) => {
           let respEvent = e.currentTarget;

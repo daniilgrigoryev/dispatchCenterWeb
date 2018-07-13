@@ -317,7 +317,7 @@
       }
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);
-      RequstApi.sendHttpRequest(requestParam)
+      RequstApi.sendHttpRequest(requestParam, true)
         .then(eventResponse => {
           if (eventResponse.status === 200) {
             this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
