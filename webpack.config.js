@@ -6,7 +6,7 @@ const publicPath = '';
 
 module.exports = (options = {}) => ({
   entry: {
-    vendor: './src/vendor',
+    vendor: './src/assets/js/vendor/vendor.js',
     index: './src/main.js'
   },
   output: {
