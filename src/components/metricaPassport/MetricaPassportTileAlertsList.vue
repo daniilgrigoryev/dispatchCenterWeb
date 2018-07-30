@@ -122,7 +122,7 @@
           return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
         };
         let data = this.$store.state.monitorViewData.data;
-        if (null !== data) {
+        if (data) {
           let rules = data.alarmRules;
           let alarms = data.alarms;
           let selectedAlarms = data.selectAlarms;

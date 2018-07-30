@@ -182,7 +182,7 @@
       getTableMetricaData: function () {
         let res = null;
         let data = this.$store.state.monitorViewData.data;
-        if (null !== data) {
+        if (data) {
           let formatDate = function (date) {
             let now = date;
             let year = "" + now.getFullYear();

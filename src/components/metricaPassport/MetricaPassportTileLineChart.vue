@@ -236,7 +236,7 @@
         };
         let res;
         let data = this.$store.state.monitorViewData.data;
-        if (null !== data) {
+        if (data) {
           let columns = [];
           let labelMap = {};
           let rows = [];

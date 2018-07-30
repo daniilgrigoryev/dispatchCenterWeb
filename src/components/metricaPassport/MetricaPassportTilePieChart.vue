@@ -10,7 +10,7 @@
       <div class="dc-widget-grid__item__header__right-column">
         <div class="dc-widget-grid__item__header__buttons">
           <el-tooltip class="item" effect="dark" content="Раскрыть на весь экран" placement="bottom">
-            <el-button size="mini" class="dc-button-icon-small">
+            <el-button @click="cmp" size="mini" class="dc-button-icon-small">
               <img src="../../assets/img/icon-zoomin-small-white.svg" alt="">
             </el-button>
           </el-tooltip>
@@ -26,14 +26,11 @@
     <!--/Хедер тайла-->
 
     <!--Круговая диаграмма-->
-    <ve-pie
-      :data="chartData"
-      :theme="theme"
-      ref="pieChart"
-      :settings="chartSettings"
-      :legend-visible="false">
-      <div v-if="chartDataSize <= 0" class="data-empty">data empty😂</div>
-    </ve-pie>
+    <echarts
+      :options="pieChart"
+      auto-resize
+    >
+    </echarts>
     <!--/Круговая диаграмма-->
 
     <!--Футер тайла-->
@@ -56,70 +53,17 @@
 </template>
 
 <script>
-  import VePie from 'v-charts/lib/pie.common' // https://v-charts.js.org/#/en/start'
+  import echarts from 'vue-echarts/components/ECharts'
 
   export default {
-    components: {VePie},
     props: {
       title: {
         type: String
       }
     },
+    components: {echarts},
     data: function () {
       return {
-        theme: {
-          pie: {
-            color: [],
-            tooltip: {
-              padding: 5,
-              backgroundColor: 'rgba(44,50,61,0.85)',
-              borderWidth: 1,
-              formatter: function (params) {
-                let title = 'Тип';
-                if (
-                  params.data.name === 'Незаметный' ||
-                  params.data.name === 'Низкий' ||
-                  params.data.name === 'Нормальный' ||
-                  params.data.name === 'Высокий' ||
-                  params.data.name === 'Срочный') {
-                  title = 'Уровень';
-                }
-                return `
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="margin-right: 10px;">
-                                    <div style="font-size: 10px; font-weight: 300; text-transform: uppercase; letter-spacing: 1.5px; color: #89a1c2;">${title}</div>
-                                    <div style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px;">${params.data.name}</div>
-                                </div>
-                                <div style="font-size: 24px; font-weight: 600;">${params.data.value}</div>
-                            </div>`;
-              }
-            }
-          }
-        },
-        chartSettings: {
-          selectedMode: false,
-          radius: 140,
-          offsetY: 160,
-          itemStyle: {
-            shadowBlur: 20,
-            emphasis: {
-              show: true,
-              label: {
-                show: false,
-                formatter: function (params) {
-                  return ``
-                }
-              }
-            }
-          },
-          label: {
-            normal: {
-              show: false,
-            },
-          },
-          color: [],
-          level: []
-        },
         typesAlert: 0,
         alerts: 0,
         objectsAlert: 0,
@@ -127,43 +71,93 @@
       }
     },
     computed: {
-      chartData: function () {
-        let chartData = this.getPieChartData();
-        let res;
+      pieChart: function () {
+        debugger;
+        let chartData = this.$store.state.monitorViewData.data;
+        let option;
         if (chartData) {
-          let arr = chartData.rows[0].concat(chartData.rows[1]);
-          res = {
-            columns: chartData.columns,
-            rows: arr
+          // based on prepared DOM, initialize echarts instance
+          option = {
+            tooltip: {
+              padding: 5,
+              backgroundColor: 'rgba(44,50,61,0.85)',
+              borderWidth: 1,
+              formatter: function (params) {
+                return `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="margin-right: 10px;">
+                                    <div style="font-size: 10px; font-weight: 300; text-transform: uppercase; letter-spacing: 1.5px; color: #89a1c2;">${params.seriesName}</div>
+                                    <div style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px;">${params.data.name}</div>
+                                </div>
+                                <div style="font-size: 24px; font-weight: 600;">${params.data.value}</div>
+                            </div>`;
+              }
+            },
+            color: [],
+            legend: {
+              show: false
+            },
+            series: [
+              {
+                name: 'Тип',
+                type: 'pie',
+                radius: [0, '30%'],
+                selectedMode: false,
+                emphasis: {
+                  show: true,
+                  label: {
+                    show: false,
+                    formatter: function (params) {
+                      return ``
+                    }
+                  }
+                },
+                itemStyle: {
+                  shadowBlur: 20,
+                },
+                label: {
+                  normal: {
+                    show: false
+                  },
+                },
+                data: []
+              },
+              {
+                name: 'Уровень',
+                type: 'pie',
+                radius: ['40%', '55%'],
+                selectedMode: false,
+                emphasis: {
+                  show: true,
+                  label: {
+                    show: false,
+                    formatter: function (params) {
+                      return ``
+                    }
+                  }
+                },
+                itemStyle: {
+                  shadowBlur: 20,
+                },
+                label: {
+                  normal: {
+                    show: false
+                  },
+                },
+                data: []
+              }
+            ]
           };
-          this.chartSettings.level = chartData.names;
-        }
-        return res;
-      }
-    },
-    mounted: function () {
-      setTimeout(function () {
-        // TODO: убрать злобный хак ресайза окна! - но иначе графикв выездает за пределы блока
-        window.dispatchEvent(new Event('resize'));
-      }, 500)
-    },
-    methods: {
-      getPieChartData() {
-        let res;
-        let data = this.$store.state.monitorViewData.data;
-        if (null !== data) {
-          let rules = data.alarmRules;
-          let alarms = data.alarms;
-          let selectedAlarms = data.selectAlarms;
-          let rows = [[], []];
-          let names = [[], []];
+          let rules = chartData.alarmRules;
+          let alarms = chartData.alarms;
+          let selectedAlarms = chartData.selectAlarms;
           let legend = [];
           let levelsCount = {};
           let rulesData = {};
-          this.theme.pie.color = [];
-          let levelColors = this.theme.pie.color;
+          option.color = [];
+          let levelColors = option.color;
           this.alerts = selectedAlarms.length > 0 ? selectedAlarms.length : alarms.length;
-          this.objectsAlert = data.selectObj.length > 0 ? data.selectObj.length : data.objects.length;
+          this.objectsAlert = chartData.selectObj.length > 0 ? chartData.selectObj.length : chartData.objects.length;
           // Типы
           for (let m = 0; m < rules.length; m++) {
             let rule = rulesData[rules[m].id];
@@ -176,7 +170,6 @@
               };
             }
           }
-
           for (let n = 0; n < alarms.length; n++) {
             if (selectedAlarms.length > 0 && !selectedAlarms.includes(alarms[n].id)) {
               continue;
@@ -198,11 +191,11 @@
                 levelColors.push('#936152');
               }
               let rule = rulesData[prop];
-              rows[0].push({
-                'name': rule.note,
-                'value': rule.count
+              option.series[0].data.push({
+                'value': rule.count,
+                'name': rule.note
               });
-              names[0].push(rule.note);
+              // option.legend.data.push(rule.note);
             }
             k++;
           }
@@ -259,22 +252,34 @@
             levelsCount[name] = ++levelsCount[name];
           }
           for (let j = 0; j < legend.length; j++) {
-            rows[1].push({
-              'name': legend[j],
-              'value': levelsCount[legend[j]]
+            option.series[1].data.push({
+              'value': levelsCount[legend[j]],
+              'name': legend[j]
             });
-            names[1].push(legend[j]);
+            // option.legend.data.push(legend[j]);
           }
-          this.typesAlert = names[0].length;
-          res = {
-            columns: ['name', 'value'],
-            rows: rows,
-            names: names
-          };
-          this.chartDataSize = rows[0].length + rows[1].length;
+          this.typesAlert = option.series[0].data.length;
+          this.chartDataSize = option.series[0].data.length + option.series[1].data.length;
         }
-        return res;
+        return option;
       }
+    },
+    methods: {
+      cmp: function () {
+        let chartData = this.$store.state.monitorViewData.data;
+        if (chartData) {
+          chartData.alarmRules = [];
+          chartData.alarms = [];
+          chartData.graph = {};
+          this.$store.dispatch('monitorViewDataSetData', {data: chartData});
+        }
+      }
+    },
+    mounted: function () {
+      setTimeout(function () {
+        // TODO: убрать злобный хак ресайза окна! - но иначе графикв выездает за пределы блока
+        window.dispatchEvent(new Event('resize'));
+      }, 500)
     }
   }
 </script>
