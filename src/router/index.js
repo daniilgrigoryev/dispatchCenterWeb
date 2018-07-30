@@ -1,9 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Authorization from './../components/Authorization'
-import MonitorViewData from '../components/MonitorViewData'
+import MonitorViewData from '../components/metricaPassport/MonitorViewData'
 import MonitorDict from '../components/MonitorDict'
-import Test from '../components/Test'
 import PageNotFound from '../components/404'
 import * as funcUtils from "./../assets/js/utils/funcUtils";
 
@@ -25,11 +24,6 @@ const router = new Router({
       props: true
     },
     {
-      path: '/test',
-      name: 'Test',
-      component: Test
-    },
-    {
       path: '/monitorDict',
       name: 'MonitorDict',
       component: MonitorDict
@@ -43,22 +37,22 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  let path = JSON.parse(sessionStorage.getItem('path'));
+  let path = funcUtils.getFromSessionStorage('path');
   let currentPage = funcUtils.getCurrentPage(path);
-  if (null === to || null === to.name) {
+  if (funcUtils.isNull(to) || funcUtils.isNull(to.name)) {
     next('/404');
-  } else if (null === currentPage) {
-    if (null === sessionStorage.getItem('wid')) {
-      next();
-    } else {
-      next('/');
-    }
+  } else if (funcUtils.isNull(currentPage)) {
+      if (funcUtils.isNull(sessionStorage.getItem('wid'))) {
+        next();
+      } else {
+        next('/');
+      }
   } else if (to.name === 'Authorization' && currentPage.routeName === 'Authorization') {
-    next();
-  } else if (localStorage.getItem('auth') === 'true' && currentPage.routeName === to.name) {
-    next();
+      next();
+  } else if (funcUtils.getfromLocalStorage('auth') && currentPage.routeName === to.name) {
+      next();
   } else {
-    next({name: currentPage.routeName});
+      next({name: currentPage.routeName});
   }
 });
 

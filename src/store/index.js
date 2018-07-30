@@ -1,18 +1,16 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import authorization from './modules/authorization';
 import monitorViewData from './modules/monitorViewData';
 import monitorDict from './modules/monitorDict';
+import * as funcUtils from "./../assets/js/utils/funcUtils";
 
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    cid: 789,
-    count: 1,
-    modulesNames: ['monitorViewData']
+    cid: null,
+    modulesNames: ['monitorDict', 'monitorViewData']
   },
-  // plugins: [createPersistedState()],
   mutations: {},
   actions: {
     fillModule: function ({commit, dispatch}, payload) {
@@ -24,14 +22,13 @@ const store = new Vuex.Store({
           payload.selfStore;
         let dataJson = JSON.parse(data);
         if (dataJson.method === 'ping') {
-          let selfStorePing = payload.selfStore;
-          let secondsInactive = (new Date().getTime() - JSON.parse(localStorage.getItem('lastActive'))) / 1000 / 60;
+          let selfStorePing = payload.selfStore.$root;
+          let secondsInactive = (new Date().getTime() - funcUtils.getfromLocalStorage('lastActive')) / 1000 / 60;
           if (secondsInactive > 15) {
             selfStorePing.logout();
           }
           return;
         }
-        debugger;
         let respData = dataJson.data;
         let respError = dataJson.error;
         if (null !== respData) {
@@ -39,7 +36,7 @@ const store = new Vuex.Store({
           for (let prop in props) {
             if (props.hasOwnProperty(prop)) {
               let propObj = props[prop];
-              if (propObj.hasOwnProperty('cid') || propObj.hasOwnProperty('bean')) {
+              if (propObj && null !== propObj && (propObj.hasOwnProperty('cid') || propObj.hasOwnProperty('bean'))) {
                 let moduleObj = props[prop];
                 if ((null !== dataJson.cid && (moduleObj.cid === dataJson.cid)) || (null !== dataJson.bean) && (moduleObj.bean === dataJson.bean)) {
                   let actionName = moduleObj['moduleName'] + 'SetData';
@@ -56,7 +53,6 @@ const store = new Vuex.Store({
   },
   getters: {},
   modules: {
-    authorization,
     monitorDict,
     monitorViewData
   }

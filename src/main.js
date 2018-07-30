@@ -1,25 +1,19 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/ru-RU'
-import 'element-ui/lib/theme-chalk/index.css'
-import '@mapbox/assembly/dist/assembly.css'
-import '@mapbox/assembly/dist/assembly.js'
-import 'source-sans-pro/source-sans-pro.css'
 import App from './App'
 import router from './router'
 import store from './store'
 import $ from "jquery";
 import {guid} from "./assets/js/utils/funcUtils";
 import {RequstApi} from './assets/js/api/requestApi';
-import * as ConstantUtils from './assets/js/utils/constantUtils';
 import * as RequestEntity from './assets/js/api/requestEntity';
 import * as funcUtils from "./assets/js/utils/funcUtils";
+import './themes/element-theme-build/index.css'
+import './assets/js/vendor/vendor.js'
 
 Vue.config.productionTip = false;
-
-Vue.use(ElementUI);
+Vue.use(ElementUI, { locale, size: 'small' });
 
 let vue = new Vue({
   el: '#app',
@@ -28,27 +22,23 @@ let vue = new Vue({
   data: {},
   render: h => h(App),
   beforeCreate: function () {
-    history.pushState(null, null, location.href);
+    history.pushState(null, null, window.location.href);
     window.onpopstate = function () {
       history.go(1);
     };
-    if (null === sessionStorage.getItem('wid')) {
+    if (funcUtils.isNull(sessionStorage.getItem('wid'))) {
       sessionStorage.setItem('wid', guid());
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
-      sessionStorage.setItem('path', '[{"routeName":"Authorization","current":true}]');
+      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
     }
-    localStorage.setItem('lastActive', JSON.stringify(new Date().getTime()));
-    if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
-      let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
-      RequstApi.sendSocketRequest(temp, this);
-    }
+    funcUtils.addToLocalStorage('lastActive', new Date().getTime());
   },
   mounted: function () {
     this.activateTimer();
   },
   methods: {
     logout: function () {
-      funcUtils.removeAllComponents(false);
+      funcUtils.removeAllComponents();
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'logout');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam)
@@ -61,7 +51,7 @@ let vue = new Vue({
                 localStorage.removeItem('auth');
                 localStorage.removeItem('sid');
                 localStorage.removeItem('lastActive');
-                sessionStorage.setItem('path', '[{"routeName":"Authorization","current":true}]');
+                funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
                 this.$router.push('/');
               }
             }
@@ -72,12 +62,9 @@ let vue = new Vue({
         });
     },
     activateTimer: function () {
-      debugger;
       $("body").bind("mousemove keypress mousedown", (function (e) {
         localStorage.setItem('lastActive', JSON.stringify(new Date().getTime()));
       }))
     }
   }
-  // template: '<App/>',
-  // components: { App }
 });

@@ -1,14 +1,13 @@
-import * as ConstantUtils from "../../assets/js/utils/constantUtils";
-
 export default {
   state: {
     moduleName: 'monitorViewData',
     cid: null,
     bean: 'MonitorView',
+    routeName: 'MonitorViewData',
     data: null
   },
   mutations: {
-    monitorDictSetCid(state, cid) {
+    monitorViewDataSetCid(state, cid) {
       state.cid = cid;
     },
     monitorViewDataSetData(state, data) {
@@ -16,8 +15,8 @@ export default {
     }
   },
   actions: {
-    monitorDictSetCid: ({commit}, payload) => {
-      commit('monitorDictSetCid', payload);
+    monitorViewDataSetCid: ({commit}, payload) => {
+      commit('monitorViewDataSetCid', payload);
     },
     monitorViewDataSetData: ({commit}, payload) => {
       commit('monitorViewDataSetData', payload.data);

@@ -28,7 +28,7 @@ export function webGlId() {
   let gl = canvas[0].getContext("webgl");
   let sum = '';
   for (let a in gl) {
-    if (typeof gl[a] !== 'function') {
+    if (gl.hasOwnProperty(a) && typeof gl[a] !== 'function') {
       sum += a + ':' + gl[a] + '\n';
     }
   }
@@ -36,9 +36,55 @@ export function webGlId() {
   return sum.hashCode();
 }
 
+export function isUndefined(obj) {
+  return undefined === obj;
+}
+
+export function isNull(obj) {
+  return null === obj;
+}
+
+export function isEmpty(obj) {
+  return isUndefined(obj) || isNull(obj);
+}
+
+export function isNotEmpty(obj) {
+  return !isUndefined(obj) && !isNull(obj);
+}
+
+export function addToLocalStorage(key, value) {
+  if (isNotEmpty(key) && isNotEmpty(value)) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+}
+
+export function addToSessionStorage(key, value) {
+  if (isNotEmpty(key) && isNotEmpty(value)) {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  }
+}
+
+export function getfromLocalStorage(key) {
+  let res = null;
+  let item = localStorage.getItem(key);
+  if (isNotEmpty(item)) {
+    res = JSON.parse(item);
+  }
+  return res;
+}
+
+export function getFromSessionStorage(key) {
+  let res = null;
+  let item = sessionStorage.getItem(key);
+  if (isNotEmpty(item)) {
+    res = JSON.parse(item);
+  }
+  return res;
+}
+
 export function getCurrentComponent(componentArr) {
   let currentComponent = null;
-  if (null === componentArr || componentArr.length === 0) {
+  if (isNull(componentArr) || componentArr.length === 0) {
     return currentComponent;
   }
   for (let i = 0; i < componentArr.length; i++) {
@@ -50,21 +96,20 @@ export function getCurrentComponent(componentArr) {
   }
 }
 
-export function getNextComponent(beanName, callback, withSpinner) {
-  debugger;
+export function getNextComponent(beanName, callback) {
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
-  let componentsRoute = JSON.parse(sessionStorage.getItem(wid));
+  let componentsRoute = getFromSessionStorage(wid);
   currentComponent = getCurrentComponent(componentsRoute);
   if (componentsRoute.length > 0) {
     currentComponent.current = false;
-    sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
+    addToSessionStorage(wid, componentsRoute);
     currentComponent = null;
   }
-  if (null === currentComponent || undefined === currentComponent) {
+  if (isEmpty(currentComponent)) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, beanName, null);
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam, withSpinner)
+    RequstApi.sendHttpRequest(requestParam)
       .then(eventResponse => {
         if (eventResponse.status === 200) {
           let data = eventResponse.response;
@@ -81,8 +126,7 @@ export function getNextComponent(beanName, callback, withSpinner) {
                   'current': true
                 };
                 componentsRoute.push(currentComponent);
-                sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
-                // return currentComponent;
+                addToSessionStorage(wid, componentsRoute);
                 if (undefined !== callback) {
                   callback();
                 }
@@ -101,16 +145,15 @@ export function getNextComponent(beanName, callback, withSpinner) {
   }
 }
 
-export function getPrevComponent(callback, withSpinner) {
-  debugger;
+export function getPrevComponent(callback) {
   let currentComponent;
   let wid = sessionStorage.getItem('wid');
-  let componentsRoute = JSON.parse(sessionStorage.getItem(wid));
+  let componentsRoute = getFromSessionStorage(wid);
   if (componentsRoute.length > 0) {
     currentComponent = getCurrentComponent(componentsRoute);
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam, withSpinner)
+    RequstApi.sendHttpRequest(requestParam)
       .then(eventResponse => {
         if (eventResponse.status === 200) {
           let data = eventResponse.response;
@@ -123,7 +166,7 @@ export function getPrevComponent(callback, withSpinner) {
                 currentComponent = componentsRoute[currentComponent.count - 1];
                 currentComponent.current = true;
               }
-              sessionStorage.setItem(wid, JSON.stringify(componentsRoute));
+              addToSessionStorage(wid, componentsRoute);
               // return currentComponent;
               if (undefined !== callback) {
                 callback();
@@ -141,14 +184,26 @@ export function getPrevComponent(callback, withSpinner) {
   }
 }
 
-export function removeAllComponents(withSpinner) {
+export function removeComponent(cid) {
+  let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), cid, null, 'removeCID');
+  let requestParam = new RequestEntity.RequestParam(requestHead, null);
+  RequstApi.sendHttpRequest(requestParam)
+    .then(eventResponse => {
+    })
+    .catch(eventResponse => {
+      alert(eventResponse.message);
+    });
+}
+
+export function removeAllComponents() {
   let wid = sessionStorage.getItem('wid');
-  let componentsRoute = JSON.parse(sessionStorage.getItem(wid));
+  let componentsRoute = getFromSessionStorage(wid);
   for (let i = 0; i < componentsRoute.length; i++) {
     let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, componentsRoute[i].cid, null, 'removeCID');
     let requestParam = new RequestEntity.RequestParam(requestHead, null);
-    RequstApi.sendHttpRequest(requestParam, withSpinner)
-      .then(eventResponse => {})
+    RequstApi.sendHttpRequest(requestParam)
+      .then(eventResponse => {
+      })
       .catch(eventResponse => {
         alert(eventResponse.message);
       });
@@ -158,7 +213,7 @@ export function removeAllComponents(withSpinner) {
 
 export function getCurrentPage(path) {
   let currentPage = null;
-  if (null === path || path.length === 0) {
+  if (isNull(path) || path.length === 0) {
     return currentPage;
   }
   for (let i = 0; i < path.length; i++) {
@@ -171,7 +226,7 @@ export function getCurrentPage(path) {
 }
 
 export function getNextPage(router, pageName, params) {
-  let path = JSON.parse(sessionStorage.getItem('path'));
+  let path = getFromSessionStorage('path');
   let currPage = getCurrentPage(path);
   currPage.current = false;
   path.push({
@@ -179,14 +234,14 @@ export function getNextPage(router, pageName, params) {
     'current': true,
     'params': params
   });
-  sessionStorage.setItem('path', JSON.stringify(path));
+  addToSessionStorage('path', path);
   router.push({name: pageName, params});
 }
 
 export function getPrevPage(router, pageName, params) {
-  let path = JSON.parse(sessionStorage.getItem('path'));
+  let path = getFromSessionStorage('path');
   path.splice(path.length - 1, 1);
   path[path.length - 1].current = true;
-  sessionStorage.setItem('path', JSON.stringify(path));
+  addToSessionStorage('path', path);
   router.push({name: pageName, params});
 }

@@ -2,6 +2,7 @@ export default {
   state: {
     moduleName: 'monitorDict',
     bean: 'StateBean',
+    routeName: 'MonitorDict',
     data: null
   },
   mutations: {

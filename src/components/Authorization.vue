@@ -21,7 +21,6 @@
 </template>
 
 <script>
-  import * as ConstantUtils from './../assets/js/utils/constantUtils';
   import * as RequestEntity from './../assets/js/api/requestEntity';
   import Fingerprint from "./../assets/js/vendor/fingerprint";
   import {RequstApi} from './../assets/js/api/requestApi';
@@ -38,10 +37,10 @@
 
     methods: {
       authorize: function () {
-        // debugger;
         if (this.userName !== '' && this.password !== '') {
+          let wid = sessionStorage.getItem('wid');
           let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, this.userName, null, this.password);
-          let requestHead = new RequestEntity.RequestHead(null, sessionStorage.getItem('wid'), null, null, 'login');
+          let requestHead = new RequestEntity.RequestHead(null, wid, null, null, 'login');
           let requestParam = new RequestEntity.RequestParam(requestHead, loginParams);
           RequstApi.sendHttpRequest(requestParam)
             .then(eventResponse => {
@@ -55,8 +54,8 @@
                     if (dataJson.method === 'login') {
                       localStorage.setItem('auth', 'true');
                       localStorage.setItem('sid', respData.sid);
-                      if (null === sessionStorage.getItem(sessionStorage.getItem('wid'))) {
-                        sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
+                      if (funcUtils.isNull(sessionStorage.getItem(wid))) {
+                        sessionStorage.setItem(wid, '[]');
                       }
                       this.$root.activateTimer();
                     }
@@ -65,10 +64,10 @@
                   }
                 }
               }
-              if (undefined !== localStorage.getItem('sid') && null !== localStorage.getItem('sid')) {
-                let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
+              if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
+                let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, null, 'addWID'), null);
                 RequstApi.sendSocketRequest(temp, this);
-                funcUtils.getNextPage(this.$router, 'MonitorDict');
+                funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
               }
             })
             .catch(eventResponse => {

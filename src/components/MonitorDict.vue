@@ -1,8 +1,10 @@
 <template>
   <div>
     <h1>Список мониторов</h1>
-    <input type="date" v-model="dateBeg"/>
-    <input type="date" v-model="dateEnd"/>
+    <el-date-picker v-model="dateBeg" format="dd.MM.yyyy" type="date" placeholder="Pick a start">
+    </el-date-picker>
+    <el-date-picker v-model="dateEnd" format="dd.MM.yyyy" type="date" placeholder="Pick a end">
+    </el-date-picker>
     <ul>
       <li v-for="monitor in monitors" class="mt24">
         <el-button v-on:click="getNext(monitor.id)" round type="primary">{{ monitor.name }}</el-button>
@@ -12,20 +14,23 @@
 </template>
 
 <script>
-  import * as ConstantUtils from './../assets/js/utils/constantUtils';
   import * as RequestEntity from './../assets/js/api/requestEntity';
   import {RequstApi} from './../assets/js/api/requestApi';
   import * as funcUtils from "./../assets/js/utils/funcUtils";
+  import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
 
   export default {
     name: "MonitorDict",
+    components: {
+      GridLayout: VueGridLayout.GridLayout,
+      GridItem: VueGridLayout.GridItem,
+    },
     beforeCreate: function () {
       let wid = sessionStorage.getItem('wid');
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorDict.bean, 'getMonitorDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
-      RequstApi.sendHttpRequest(requestParam, true)
+      RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
-          // debugger;
           if (eventResponse.status === 200) {
             this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
           }
@@ -36,8 +41,8 @@
     },
     data() {
       return {
-        dateBeg: new Date(),
-        dateEnd: new Date()
+        dateBeg: null,
+        dateEnd: null
       }
     },
     computed: {
@@ -49,26 +54,20 @@
       getNext: function (ruleId) {
         let params = {
           'ruleId': ruleId,
-          'dateBeg': null,
-          'dateEnd': null
+          'dateBeg': this.dateBeg,
+          'dateEnd': this.dateEnd
         };
-        if (this.dateBeg !== null) {
-          params.dateBeg = new Date(this.dateBeg).getTime();
-        } else {
+        if (funcUtils.isNull(this.dateBeg)) {
           alert("Начальный период необходимо заполнить!");
           return;
         }
-        if (this.dateEnd !== null) {
-          params.dateEnd = new Date(this.dateEnd).getTime();
-        }
         funcUtils.getNextComponent(this.$store.state.monitorViewData.bean, () => {
-          funcUtils.getNextPage(this.$router, 'MonitorViewData', params);
+          funcUtils.getNextPage(this.$router, this.$store.state.monitorViewData.routeName, params);
         });
       }
     }
   }
 </script>
 
-<style scoped>
-
+<style lang="scss">
 </style>
