@@ -36,7 +36,14 @@
 
     <!--/Линейная диаграмма-->
 
-    <ve-line
+    <echarts
+      style="width: 100%"
+      :options="lineChart"
+      auto-resize
+    >
+    </echarts>
+
+    <!--<ve-line
       :data="chartData"
       :settings="chartSettings"
       :theme="theme"
@@ -45,17 +52,18 @@
       :legend-visible="true"
       :data-zoom="chartOptions.dataZoom">
       <div v-if="chartDataSize <= 0" class="data-empty">data empty😂</div>
-    </ve-line>
+    </ve-line>-->
+
 
     <!--/Линейная диаграмма-->
   </div>
 </template>
 
 <script>
-  import VeLine from 'v-charts/lib/line.common' // https://v-charts.js.org/#/en/start
+  import echarts from 'vue-echarts/components/ECharts'
 
   export default {
-    components: {VeLine},
+    components: {echarts},
     props: {
       title: {
         type: String
@@ -63,136 +71,11 @@
     },
     data() {
       return {
-        theme: {
-          color:
-            [
-            '#0f0',
-            '#ba55d3',
-            '#87ceeb',
-            '#ff6969',
-            '#ffd700',
-            '#ffe4b5',
-            '#8a2be2',
-            '#c71585',
-            '#008080',
-            '#b22222',
-            '#e0830a',
-            '#1c91c0',
-            '#00c000',
-            '#c0c0c0',
-            '#9999ff',
-            '#afffaf',
-            ],
-          grid: {
-            top: 40,
-            left: '5%',
-            width: '80%'
-          },
-          textStyle: {
-            fontSize: '13',
-            color: 'rgba(114, 135, 165, 0.85)'
-          },
-          "line": {
-            lineStyle: {
-              width: 4,
-            },
-            smooth: true,
-            symbol: 'roundRect',
-
-          },
-          "categoryAxis": {
-            "axisLine": {
-              "show": true,
-            },
-            "axisLabel": {
-              "show": true,
-              "textStyle": {
-                "color": "rgba(114, 135, 165, 0.85)"
-              }
-            },
-            "splitLine": {
-              "show": false
-            },
-
-          },
-          "valueAxis": {
-            "splitLine": {
-              "show": false
-            },
-          },
-          tooltip: {
-            padding: 5,
-            backgroundColor: 'rgba(44,50,61,0.9)',
-            borderWidth: 1,
-            textStyle: {
-              color: "#c7cae2"
-            }
-          }
-        },
-        legend: {
-          type: 'scroll',
-          orient: 'vertical',
-          right: '2%',
-          top: 45,
-          bottom: 20,
-          textStyle: {
-            fontSize: '12',
-            color: 'rgba(114, 135, 165, 0.85)'
-          }
-        },
-        chartOptions: {
-          dataZoom: [{
-            type: 'inside'
-          }, {
-            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-            handleSize: '80%',
-            handleStyle: {
-              color: '#fff',
-              shadowBlur: 3,
-              shadowColor: 'rgba(0, 0, 0, 0.6)',
-              shadowOffsetX: 2,
-              shadowOffsetY: 2
-            }
-          }],
-          toolbox: {
-            show : true,
-            feature : {
-              mark : {show: true},
-              dataView : {show: true, readOnly: false},
-              magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-              restore : {show: true},
-              saveAsImage : {show: true}
-            }
-          }
-        },
         chartDataSize: 0
       }
     },
     computed: {
-      chartData: function () {
-        let chartData = this.getLineChartData();
-        let res;
-        if (chartData) {
-          res = {
-            columns: chartData.columns,
-            rows: chartData.rows
-          };
-        }
-        return res;
-      },
-      chartSettings: function () {
-        let chartData = this.getLineChartData();
-        let res;
-        if (chartData) {
-          res = {
-            labelMap: chartData.labelMap
-          };
-        }
-        return res;
-      }
-    },
-    methods: {
-      getLineChartData() {
+      lineChart: function () {
         let sortNumber = function (a, b) {
           return a[Object.keys(a)[0]] - b[Object.keys(b)[0]];
         };
@@ -234,22 +117,132 @@
           }
           return day + "." + month + "." + year; // + " " + hour + ":" + minute + ":" + second
         };
-        let res;
+        let option;
         let data = this.$store.state.monitorViewData.data;
         if (data) {
-          let columns = [];
-          let labelMap = {};
-          let rows = [];
+          option = {
+            dataZoom: [
+              {
+                show: true,
+                realtime: true
+              },
+              {
+                type: 'inside',
+                realtime: true
+              }
+            ],
+            color:
+              [
+                '#0f0',
+                '#ba55d3',
+                '#87ceeb',
+                '#ff6969',
+                '#ffd700',
+                '#ffe4b5',
+                '#8a2be2',
+                '#c71585',
+                '#008080',
+                '#b22222',
+                '#e0830a',
+                '#1c91c0',
+                '#00c000',
+                '#c0c0c0',
+                '#9999ff',
+                '#afffaf',
+              ],
+            textStyle: {
+              fontSize: '13',
+              color: 'rgba(114, 135, 165, 0.85)'
+            },
+            categoryAxis: {
+              axisLine: {
+                show: true,
+              },
+              axisLabel: {
+                show: true,
+                textStyle: {
+                  color: "rgba(114, 135, 165, 0.85)"
+                }
+              },
+              splitLine: {
+                show: false
+              },
+
+            },
+            valueAxis: {
+              splitLine: {
+                show: false
+              },
+            },
+            tooltip: {
+              trigger: 'axis',
+              padding: 5,
+              backgroundColor: 'rgba(44,50,61,0.9)',
+              borderWidth: 1,
+              textStyle: {
+                color: "#c7cae2"
+              }
+            },
+            legend: {
+              data: [],
+              type: 'scroll',
+              orient: 'vertical',
+              right: '2%',
+              top: 45,
+              bottom: 20,
+              textStyle: {
+                fontSize: '12',
+                color: 'rgba(114, 135, 165, 0.85)'
+              }
+            },
+            toolbox: {
+              show: true,
+              feature: {
+                dataZoom: {
+                  yAxisIndex: 'none'
+                },
+                dataView: {readOnly: false},
+                magicType: {type: ['line', 'bar']},
+                restore: {},
+                saveAsImage: {}
+              }
+            },
+            grid: {
+              top: 40,
+              left: '5%',
+              width: '80%',
+              containLabel: true
+            },
+            xAxis: null,
+            yAxis: {
+              type: 'value',
+              boundaryGap: false,
+              splitLine: {
+                show: false
+              }
+            },
+            series: null
+          };
+          let legend = [];
+          let series = [];
+          let xAxis = {
+            type: 'category',
+            boundaryGap: false,
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              show: true,
+              rotate: 45,
+              margin: 8
+            },
+          };
           let grafic = data.graph;
-          let cnt = 0;
-          columns.push('date');
-          labelMap['date'] = 'Фиксации';
-          let parsedDataGraph = {};
           for (let k in grafic) {
             if (grafic.hasOwnProperty(k)) {
               let graph = grafic[k];
               let graphName = '';
-              if (k !== 0) {
+              if (k != 0) {
                 data.objects.forEach((obj) => {
                   if (obj.id == k) {
                     graphName = ' ' + obj.name;
@@ -257,51 +250,53 @@
                 });
               }
               for (let i = 0; i < data.items.length; i++) {
-                let column = data.items[i].marker + graphName;
-                let columnItem = data.items[i].name + graphName;
-                if (!columns.includes(column)) {
-                  columns.push(column);
+                if (!option.legend.data.includes(data.items[i].name + graphName)) {
+                  option.legend.data.push(data.items[i].name + graphName);
                 }
-                labelMap[column] = columnItem;
-                let dataGraph = graph[data.items[i].name];
-                // dataGraph.sort(sortNumber);
-                for (let m = 0; m < dataGraph.length; m++) {
-                  let date = formatDate(new Date(dataGraph[m].d));
-                  if (undefined === parsedDataGraph[date]) {
-                    parsedDataGraph[date] = {};
-                  }
-                  let count = parsedDataGraph[date][columnItem];
+                if (!legend.includes(data.items[i].name)) {
+                  legend.push(data.items[i].name);
+                }
+              }
+              for (let j = 0; j < legend.length; j++) {
+                let tempXAxisData = {};
+                let xAxisData = graph[legend[j]];
+                xAxisData.sort((a, b) => {
+                  return a.d - b.d;
+                });
+                xAxisData.forEach((item) => {
+                  let formattedDate = formatDate(new Date(item.d));
+                  let count = tempXAxisData[formattedDate];
                   if (!count) {
                     count = 0;
                   }
-                  count += dataGraph[m].v;
-                  parsedDataGraph[date][column] = count;
+                  count += item.v;
+                  tempXAxisData[formattedDate] = count;
+                });
+                let serie = {
+                  name: legend[j] + graphName,
+                  type: 'line',
+                  data: [],
+                  showSymbol: false,
+                  lineStyle: {
+                    width: 4,
+                  },
+                  smooth: true,
+                  symbol: 'roundRect'
+                };
+                for (let prop in tempXAxisData) {
+                  if (tempXAxisData.hasOwnProperty(prop)) {
+                    serie.data.push([prop, tempXAxisData[prop]]);
+                  }
                 }
+                series.push(serie);
               }
             }
           }
-          for (let prop in parsedDataGraph) {
-            if (parsedDataGraph.hasOwnProperty(prop)) {
-              let obj = {};
-              obj['date'] = prop;
-              for (let innerProp in parsedDataGraph[prop]) {
-                if (parsedDataGraph[prop].hasOwnProperty(innerProp)) {
-                  obj[innerProp] = parsedDataGraph[prop][innerProp];
-                }
-              }
-              rows.push(obj);
-            }
-          }
-          rows.sort(sortDate);
-          res = {
-            columns: columns,
-            rows: rows,
-            labelMap: labelMap
-          };
-          cnt++;
-          this.chartDataSize = cnt;
+          this.chartDataSize = 3;
+          option.xAxis = xAxis;
+          option.series = series;
         }
-        return res;
+        return option;
       }
     }
   }
@@ -310,18 +305,5 @@
 <style>
   .ve-line {
     margin: auto;
-  }
-
-  .data-empty {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #888;
-    font-size: 14px;
   }
 </style>

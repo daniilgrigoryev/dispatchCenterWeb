@@ -72,7 +72,6 @@
     },
     computed: {
       pieChart: function () {
-        debugger;
         let chartData = this.$store.state.monitorViewData.data;
         let option;
         if (chartData) {
@@ -287,18 +286,5 @@
 <style>
   .ve-pie {
     margin: auto;
-  }
-
-  .data-empty {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #888;
-    font-size: 14px;
   }
 </style>
