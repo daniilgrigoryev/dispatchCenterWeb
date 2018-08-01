@@ -28,6 +28,7 @@
     <!--Круговая диаграмма-->
     <echarts
       :options="pieChart"
+      style="width: 100%; height: 310px;"
       auto-resize
     >
     </echarts>
@@ -77,71 +78,127 @@
         if (chartData) {
           // based on prepared DOM, initialize echarts instance
           option = {
-            tooltip: {
-              padding: 5,
-              backgroundColor: 'rgba(44,50,61,0.85)',
-              borderWidth: 1,
-              formatter: function (params) {
-                return `
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="margin-right: 10px;">
-                                    <div style="font-size: 10px; font-weight: 300; text-transform: uppercase; letter-spacing: 1.5px; color: #89a1c2;">${params.seriesName}</div>
-                                    <div style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px;">${params.data.name}</div>
-                                </div>
-                                <div style="font-size: 24px; font-weight: 600;">${params.data.value}</div>
-                            </div>`;
-              }
-            },
-            color: [],
-            legend: {
-              show: false
-            },
+            tooltip:
+              {
+                trigger: 'item',
+                formatter: function (params) {
+                  if (params.seriesName === 'Тип') return;
+                }
+              },
+
             series: [
+              // "ТИПЫ"
               {
                 name: 'Тип',
                 type: 'pie',
-                radius: [0, '30%'],
+                radius: ['35%', '55%'],
+
                 selectedMode: false,
-                emphasis: {
-                  show: true,
-                  label: {
-                    show: false,
-                    formatter: function (params) {
-                      return ``
+
+                itemStyle: {
+                  shadowBlur: 15,
+                  emphasis: {
+                    show: true,
+                    label: {
+                      show: false,
+                      formatter: function (params) {
+                        return `{title|${params.data.name}}\n{value|${params.data.value}}\n{subtitle|алертов}`
+                      },
+                      borderRadius: 10,
+                      padding: 5,
+
+                      textStyle: {
+                        textTransform: 'uppercase'
+                      },
+
+                      rich: {
+                        title: {
+                          color: "white",
+                          fontSize: 12,
+                          fontWeight: 300,
+                          opacity: 1,
+                          backgroundColor: "rgba(44,50,61,0.7)",
+                          borderRadius: 6,
+                          padding: [6, 6],
+                          lineHeight: 15,
+                          textTransform: 'uppercase'
+                        },
+                        value: {
+                          color: 'white',
+                          borderRadius: 2,
+                          fontSize: '40',
+                          fontWeight: 300,
+                          padding: [5, 10],
+                          lineHeight: 50,
+                        },
+                        subtitle: {
+                          color: "white",
+                          fontSize: 14,
+                          fontWeight: 300,
+                          opacity: 0.2,
+                          lineHeight: 1,
+                        },
+                      }
                     }
                   }
                 },
-                itemStyle: {
-                  shadowBlur: 20,
-                },
+                avoidLabelOverlap: false,
                 label: {
                   normal: {
-                    show: false
+                    show: false,
+                    position: 'center'
                   },
+                  emphasis: {
+                    show: true,
+                    textStyle: {
+                      fontSize: '30',
+                      fontWeight: 'bold'
+                    }
+                  }
                 },
                 data: []
               },
+              // "УРОВНИ"
               {
                 name: 'Уровень',
                 type: 'pie',
-                radius: ['40%', '55%'],
+                radius: ['70%', '90%'],
                 selectedMode: false,
-                emphasis: {
-                  show: true,
-                  label: {
-                    show: false,
-                    formatter: function (params) {
-                      return ``
-                    }
-                  }
-                },
-                itemStyle: {
-                  shadowBlur: 20,
-                },
+
                 label: {
                   normal: {
-                    show: false
+                    show: false,
+                    position: 'center',
+                    backgroundColor: 'rgba(44,50,60,0.6)',
+                    color: 'red'
                   },
+                },
+
+                tooltip: {
+                  padding: 10,
+                  backgroundColor: 'rgba(44,50,61,0.7)',
+                  borderWidth: 1,
+                  formatter: function (params) {
+                    // debugger
+                    return `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="margin-right: 20px;">
+                                    <div style="font-size: 12px; font-weight: 300; color: white;">Уровень аларма</div>
+                                    <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">${params.data.name}</div>
+                                </div>
+                                <div style="font-size: 32px; font-weight: 300;">${params.data.value}</div>
+                            </div>`;
+                  }
+                },
+
+                itemStyle: {
+                  shadowBlur: 25,
+                },
+
+
+                emphasis: {
+                  show: true,
+
                 },
                 data: []
               }
