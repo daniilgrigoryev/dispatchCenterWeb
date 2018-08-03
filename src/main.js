@@ -12,8 +12,16 @@ import * as funcUtils from "./assets/js/utils/funcUtils";
 import './themes/element-theme-build/index.css'
 import './assets/js/vendor/vendor.js'
 
+import moment from 'moment';
+moment.locale('ru');
+
 Vue.config.productionTip = false;
 Vue.use(ElementUI, { locale, size: 'small' });
+
+// Глобальный фильтр форматирования дат
+Vue.filter('formatDateTime', function (dateTime, format) {
+  return moment(dateTime).format(format);
+});
 
 let vue = new Vue({
   el: '#app',
@@ -65,6 +73,7 @@ let vue = new Vue({
       $("body").bind("mousemove keypress mousedown", (function (e) {
         localStorage.setItem('lastActive', JSON.stringify(new Date().getTime()));
       }))
-    }
+    },
+
   }
 });
