@@ -83,7 +83,7 @@
 
           <!--Тайл "Список алертов"-->
           <grid-item class="dc-widget-grid__item"
-                     style="overflow-y: auto;"
+                     style="overflow-y: hidden;"
                      :x="gridTilesLayout[1].x"
                      :y="gridTilesLayout[1].y"
                      :w="gridTilesLayout[1].w"
@@ -277,7 +277,7 @@
 
     .dc-widget-grid__item__header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       padding: 4px;
       font-weight: 300;
       transition: background-color 200ms linear 80ms;

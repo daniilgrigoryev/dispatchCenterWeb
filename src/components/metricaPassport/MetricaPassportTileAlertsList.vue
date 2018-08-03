@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="dc-alerts-wrapper">
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -31,36 +31,76 @@
     </div>
     <!--/Хедер тайла-->
 
-    <!-- Список уровней алертов по типам -->
-    <ul class="dc-alerts-list">
-      <li v-for="(item, index) in alertsList" v-bind:class="'dc-alerts-list__type ' + item.dcAlertsListType"
-          v-bind:title="item.name" v-bind:name="index + 1">
-        <!--Алерты – немедленный уровень-->
-        <div v-bind:class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
-             v-on:click="setActiveAlertItem(index + 1)">
-          <div>
-            <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
-            <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
-          </div>
-          <div style="margin-left: auto; display: flex; align-items: center;">
-            <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
-            <el-button type="text" icon="el-icon-arrow-right"></el-button>
-          </div>
-        </div>
-        <ul v-bind:style="{display: (index + 1) === activeAlertListItem ? 'block' : 'none'}">
-          <li v-on:click="setActiveAlarm(alarm)"
-              class="dc-alerts-list-item"
-              v-bind:style="{background: alarm.selected ? '#b5aeb5 !important' : 'transparent'}"
-              v-for="(alarm, indexInner) in item.alarms"
-              v-bind:title="alarm.note">
-            <p>{{alarm.note}}</p>
+
+    <el-carousel :autoplay="false" ref="carousel" arrow="never" height="415px">
+      <!--Список алертов-->
+      <el-carousel-item>
+        <ul class="dc-alerts-list">
+          <li v-for="(item, index) in alertsList" v-bind:class="['dc-alerts-list__type ' + item.dcAlertsListType]"
+              v-bind:title="item.name" v-bind:name="index + 1">
+            <!--Алерты – немедленный уровень-->
+            <div v-bind:class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
+                 v-on:click.stop="setActiveAlertItem(index + 1); setCarouselItem(1)">
+              <div>
+                <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
+                <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
+              </div>
+              <div style="margin-left: auto; display: flex; align-items: center;">
+                <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
+                <el-button type="text" icon="el-icon-arrow-right"
+                           class="dc-alerts-list__type__level__toggler"></el-button>
+              </div>
+            </div>
           </li>
         </ul>
-        <!--/Алерты – немедленный уровень-->
-      </li>
-    </ul>
-    <div v-if="alertsListSize <= 0" class="data-empty">data empty😂</div>
-    <!--/Список уровней алертов (по типам)-->
+      </el-carousel-item>
+      <!--/Список алертов-->
+
+      <!--Развернутый алерт-->
+      <el-carousel-item v-if="activeAlertListItem" class="dc-alerts-list__type--active">
+        <div v-bind:class="'dc-alerts-list__type__level ' + alertsList[activeAlertListItem - 1].dcAlertsListTypeLevel"
+             v-on:click.stop="setCarouselItem(0)"
+             style="position: absolute; width: 100%;">
+          <div>
+            <div class="dc-alerts-list__type__level__heading">{{alertsList[activeAlertListItem - 1].name}}</div>
+            <div class="dc-alerts-list__type__level__subheading">{{alertsList[activeAlertListItem - 1].levelName}}</div>
+          </div>
+          <div style="margin-left: auto; display: flex; align-items: center;">
+            <div class="dc-alerts-list__type__level__value">{{alertsList[activeAlertListItem - 1].count}}</div>
+            <el-button type="text" icon="el-icon-arrow-right" class="dc-alerts-list__type__level__toggler"></el-button>
+          </div>
+        </div>
+
+        <ul style="position: absolute; left: 0; right: 0;top: 44px; bottom: 0; overflow-y: auto;">
+          <!--<li v-bind:class="['dc-alerts-list-item', {'dc-alerts-list-item&#45;&#45;selected': alarm.selected}]"-->
+
+          <li v-bind:class="['dc-alerts-list-item', {'dc-alerts-list-item--selected': alarm.selected}]"
+              v-bind:style="{background: alertsList[activeAlertListItem - 1].selected ? '#b5aeb5 !important' : 'transparent'}"
+              v-for="(alarm, indexInner) in alertsList[activeAlertListItem - 1].alarms"
+              v-bind:title="alarm.note"
+              v-on:click="setActiveAlarm(alarm)">
+            <div class='flex-parent'>
+              <div class="flex-child flex-parent flex-parent--center-cross mr24">
+                <el-checkbox v-model="alarm.selected"></el-checkbox>
+              </div>
+              <div class='flex-child'>
+                <div class="dc-alerts-list-item__name">
+                  <span>камера</span> ID 00-00-00000-0
+                </div>
+                <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
+              </div>
+              <div class='flex-child' style="margin-left: auto;">
+                <div class="dc-alerts-list-item__date">{{alarm.alarmTime | formatDateTime('DD.MM.YYYY')}}</div>
+                <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('hh:mm')}}</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </el-carousel-item>
+      <!--/Развернутый алерт-->
+    </el-carousel>
+
+    <div v-if="alertsListSize <= 0" class="data-empty">[нет данных]</div>
   </div>
 </template>
 
@@ -79,6 +119,7 @@
     },
     data() {
       return {
+        selectedCarouselItem: 0,
         selectedAlarms: [],
         activeAlertListItem: 0,
         alertsListSize: 0
@@ -209,6 +250,7 @@
         }
       },
       setActiveAlarm: function (alarm) {
+        console.log(alarm);
         let self = this;
         if (alarm.selected) {
           alarm.selected = false;
@@ -224,6 +266,7 @@
             send();
           }
         }
+
         function send() {
           let wid = sessionStorage.getItem('wid');
           let componentsRoute = funcUtils.getFromSessionStorage(wid);
@@ -240,8 +283,12 @@
               alert(eventResponse.message);
             });
         }
+      },
+
+      setCarouselItem: function (index) {
+        this.$refs.carousel.setActiveItem(index);
       }
-    }
+    },
   }
 </script>
 
@@ -255,6 +302,11 @@
   $-color-alert-type-1: #07cee2;
   $-color-alert-type-2: #8979b2;
   $-color-alert-type-3: #936152;
+
+  .dc-alerts-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
 
   /*** Типы алертов ***/
   .dc-alerts-list__type {
@@ -308,6 +360,7 @@
     align-items: center;
     margin-bottom: 2px;
     padding-left: 50px;
+    color: white;
     background-repeat: no-repeat;
     background-position: 18px center;
     background-size: 18px;
@@ -378,15 +431,63 @@
       font-size: 24px;
       color: white !important;
     }
+
+    .dc-alerts-list__type__level__value {
+      font-size: 24px;
+      margin-right: 10px;
+    }
   }
 
   .dc-alerts-list-item {
-    padding: 2px 5px;
-    font-size: 16px;
+    padding: 5px 10px;
+    color: white;
+    font-size: 13px;
+    line-height: 1.35;
+    border-bottom: 1px solid rgba(114, 135, 165, 0.5);
 
     &:hover {
-      background: #b5aeb5 !important;
+      background: rgba(114, 135, 165, 0.15) !important;
       cursor: pointer;
     }
+
+    &.dc-alerts-list-item--selected {
+      background: rgba(114, 135, 165, 0.35) !important;
+    }
   }
+
+  .dc-alerts-list-item__name {
+    text-transform: uppercase;
+
+    span {
+      opacity: 0.5;
+    }
+  }
+
+  .dc-alerts-list-item__note {
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .dc-alerts-list-item__date {
+    text-align: right;
+    opacity: 0.5;
+    line-height: 1;
+  }
+
+  .dc-alerts-list-item__time {
+    text-align: right;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .dc-alerts-list__type__level__toggler {
+    margin-right: 10px;
+    transition: all 100ms linear;
+
+    .dc-alerts-list__type--active & {
+      transform: rotate(90deg);
+    }
+  }
+
+
 </style>
