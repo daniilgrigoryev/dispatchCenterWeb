@@ -212,50 +212,67 @@
               series: null
             };
             let series = [];
+            let legend = [];
+            let chartDataSize = 0;
             let xAxis = {
               type: 'category',
               boundaryGap: false
             };
             let grafic = data.graph;
-            for (let k in grafic) {
-              if (grafic.hasOwnProperty(k)) {
-                let graph = grafic[k];
-                if (!option.legend.data.includes(k)) {
-                  option.legend.data.push(k);
-                }
-                let tempXAxisData = {};
-                graph.sort((a, b) => {
-                  return a.d - b.d;
+            for (let i in grafic) {
+              if (grafic.hasOwnProperty(i)) {
+                let min = grafic[i].reduce((min, p) => p.d < min ? p.d : min, grafic[i][0].d);
+                legend.push({
+                  min: min,
+                  name: i
                 });
-                graph.forEach((item) => {
-                  let formattedDate = formatDate(new Date(item.d));
-                  let count = tempXAxisData[formattedDate];
-                  if (!count) {
-                    count = 0;
-                  }
-                  count += item.v;
-                  tempXAxisData[formattedDate] = count;
-                });
-                let serie = {
-                  name: k,
-                  type: 'line',
-                  data: [],
-                  showSymbol: false,
-                  lineStyle: {
-                    width: 4,
-                  },
-                  smooth: true,
-                  symbol: 'roundRect'
-                };
-                for (let prop in tempXAxisData) {
-                  if (tempXAxisData.hasOwnProperty(prop)) {
-                    serie.data.push([prop, tempXAxisData[prop]]);
-                  }
-                }
-                series.push(serie);
               }
             }
-            this.chartDataSize = 3;
+            legend.sort((a, b) => {
+              return a.min - b.min;
+            });
+            for (let j = 0; j < legend.length; j++) {
+              let graph = grafic[legend[j].name];
+              if (!option.legend.data.includes(legend[j].name)) {
+                option.legend.data.push(legend[j].name);
+              }
+              let tempXAxisData = {};
+              graph.sort((a, b) => {
+                return a.d - b.d;
+              });
+              graph.forEach((item) => {
+                let formattedDate = formatDate(new Date(item.d));
+                let count = tempXAxisData[formattedDate];
+                if (!count) {
+                  count = {
+                    count: 0,
+                    srcDate: null
+                  };
+                }
+                count.count += item.v;
+                count.srcDate = item.d;
+                tempXAxisData[formattedDate] = count;
+              });
+              let serie = {
+                name: legend[j].name,
+                type: 'line',
+                data: [],
+                showSymbol: false,
+                lineStyle: {
+                  width: 4,
+                },
+                smooth: true,
+                symbol: 'roundRect'
+              };
+              for (let prop in tempXAxisData) {
+                if (tempXAxisData.hasOwnProperty(prop)) {
+                  serie.data.push([prop, tempXAxisData[prop].count]);
+                }
+              }
+              chartDataSize += 1;
+              series.push(serie);
+            }
+            this.chartDataSize = chartDataSize;
             option.xAxis = xAxis;
             option.series = series;
           }
