@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import monitorViewData from './modules/monitorViewData';
+import alarmViewData from './modules/alarmViewData';
 import monitorDict from './modules/monitorDict';
 import * as funcUtils from "./../assets/js/utils/funcUtils";
 
@@ -9,7 +10,7 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     cid: null,
-    modulesNames: ['monitorDict', 'monitorViewData']
+    modulesNames: ['monitorDict', 'monitorViewData', 'alarmViewData']
   },
   mutations: {},
   actions: {
@@ -54,7 +55,8 @@ const store = new Vuex.Store({
   getters: {},
   modules: {
     monitorDict,
-    monitorViewData
+    monitorViewData,
+    alarmViewData
   }
 });
 

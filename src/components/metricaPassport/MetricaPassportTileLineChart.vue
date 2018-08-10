@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%;">
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -29,32 +29,16 @@
           </el-tooltip>
         </div>
       </div>
-
-
     </div>
     <!--/Хедер тайла-->
 
     <!--/Линейная диаграмма-->
-
     <echarts
       style="width: 100%"
       :options="lineChart"
       auto-resize
     >
     </echarts>
-
-    <!--<ve-line
-      :data="chartData"
-      :settings="chartSettings"
-      :theme="theme"
-      :legend="legend"
-      :toolbox="chartOptions.toolbox"
-      :legend-visible="true"
-      :data-zoom="chartOptions.dataZoom">
-      <div v-if="chartDataSize <= 0" class="data-empty">data empty😂</div>
-    </ve-line>-->
-
-
     <!--/Линейная диаграмма-->
   </div>
 </template>
@@ -115,7 +99,7 @@
           if (second.length === 1) {
             second = "0" + second;
           }
-          return day + "." + month + "." + year; // + " " + hour + ":" + minute + ":" + second
+          return day + "." + month + "." + year + "\n" + hour + ":" + minute + ":" + second; //
         };
         let option;
         let data = this.$store.state.monitorViewData.data;
@@ -123,11 +107,14 @@
           option = {
             dataZoom: [
               {
+                type: 'slider',
                 show: true,
-                realtime: true
+                realtime: true,
+                bottom: '6%'
               },
               {
                 type: 'inside',
+                show: true,
                 realtime: true
               }
             ],
@@ -227,17 +214,10 @@
           let series = [];
           let xAxis = {
             type: 'category',
-            boundaryGap: false,
-            splitLine: {
-              show: false
-            },
-            axisLabel: {
-              show: true,
-              rotate: 45,
-              margin: 8
-            },
+            boundaryGap: false
           };
           let grafic = data.graph;
+          let chartDataSize = 0;
           for (let k in grafic) {
             if (grafic.hasOwnProperty(k)) {
               let graph = grafic[k];
@@ -288,11 +268,12 @@
                     serie.data.push([prop, tempXAxisData[prop]]);
                   }
                 }
+                chartDataSize += 1;
                 series.push(serie);
               }
             }
           }
-          this.chartDataSize = 3;
+          this.chartDataSize = chartDataSize;
           option.xAxis = xAxis;
           option.series = series;
         }

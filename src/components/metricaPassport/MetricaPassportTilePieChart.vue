@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%;">
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -264,36 +264,36 @@
             switch (alarms[i].level) {
               case 1: {
                 name = 'Незаметный';
-                if (!levelColors.includes('#496c7f')) {
-                  levelColors.push('#496c7f');
+                if (!levelColors.includes('#3a5b6d')) {
+                  levelColors.push('#3a5b6d');
                 }
                 break;
               }
               case 2: {
                 name = 'Низкий';
-                if (!levelColors.includes('#15c565')) {
-                  levelColors.push('#15c565');
+                if (!levelColors.includes('#0fac56')) {
+                  levelColors.push('#0fac56');
                 }
                 break;
               }
               case 3: {
                 name = 'Нормальный';
-                if (!levelColors.includes('#d39909')) {
-                  levelColors.push('#d39909');
+                if (!levelColors.includes('#d89a0f')) {
+                  levelColors.push('#d89a0f');
                 }
                 break;
               }
               case 4: {
                 name = 'Высокий';
-                if (!levelColors.includes('#ff6600')) {
-                  levelColors.push('#ff6600');
+                if (!levelColors.includes('#d85803')) {
+                  levelColors.push('#d85803');
                 }
                 break;
               }
               case 5: {
                 name = 'Срочный';
-                if (!levelColors.includes('#f72806')) {
-                  levelColors.push('#f72806');
+                if (!levelColors.includes('#bc1b0a')) {
+                  levelColors.push('#bc1b0a');
                 }
                 break;
               }

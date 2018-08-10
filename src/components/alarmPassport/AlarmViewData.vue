@@ -24,7 +24,7 @@
             </el-switch>
 
 
-            <el-button @click="refresh" size="mini" class="dc-button-icon-medium" title="Действие">
+            <el-button size="mini" class="dc-button-icon-medium" title="Действие">
               <img src="../../assets/img/icon-reload-white.svg" alt="">
             </el-button>
 
@@ -43,10 +43,12 @@
                 <el-button size="mini" type="text" @click="visible2 = false">cancel</el-button>
                 <el-button type="primary" size="mini" @click="visible2 = false">confirm</el-button>
               </div>
+
               <el-button slot="reference" size="mini" class="dc-button-icon-medium" title="Действие">
                 <img src="../../assets/img/icon-burger-large-white.svg" alt="">
               </el-button>
             </el-popover>
+
           </el-col>
         </el-row>
       </el-header>
@@ -65,7 +67,6 @@
           :vertical-compact="true"
           :margin="[5, 5]"
           :use-css-transforms="true">
-
           <!--Тайл "Типы и уровни"-->
           <grid-item class="dc-widget-grid__item"
                      :x="gridTilesLayout[0].x"
@@ -74,130 +75,58 @@
                      :h="gridTilesLayout[0].h"
                      :i="gridTilesLayout[0].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-pie-chart :title="gridTilesLayout[0].i" ref="metricaPassportPieChart">
-            </metrica-passport-tile-pie-chart>
+            <alarm-passport-tile-line-chart :title="gridTilesLayout[0].i" ref="alarmPassportLineChart">
+            </alarm-passport-tile-line-chart>
           </grid-item>
           <!--/Тайл "Типы и уровни"-->
-
-          <!--Тайл "Список алертов"-->
-          <grid-item class="dc-widget-grid__item"
-                     style="overflow: hidden;"
-                     :x="gridTilesLayout[1].x"
-                     :y="gridTilesLayout[1].y"
-                     :w="gridTilesLayout[1].w"
-                     :h="gridTilesLayout[1].h"
-                     :i="gridTilesLayout[1].i"
-                     drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-pie-chart-alerts-list :title="gridTilesLayout[1].i" ref="metricaPassportAlerts">
-            </metrica-pie-chart-alerts-list>
-          </grid-item>
-          <!--/Тайл "Список алертов"-->
-
-          <!--Тайл "Текущие показатели"-->
-          <!--<grid-item class="dc-widget-grid__item bg-transparent"
-                     :x="gridTilesLayout[2].x"
-                     :y="gridTilesLayout[2].y"
-                     :w="gridTilesLayout[2].w"
-                     :h="gridTilesLayout[2].h"
-                     :i="gridTilesLayout[2].i"
-                     drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-current-values :title="gridTilesLayout[2].i">
-            </metrica-passport-tile-current-values>
-          </grid-item>-->
-          <!--/Тайл "Текущие показатели"-->
-
-          <!--Тайл "Стики"-->
-          <grid-item class="dc-widget-grid__item"
-                     :x="gridTilesLayout[2].x"
-                     :y="gridTilesLayout[2].y"
-                     :w="gridTilesLayout[2].w"
-                     :h="gridTilesLayout[2].h"
-                     :i="gridTilesLayout[2].i"
-                     drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-sticks :title="gridTilesLayout[2].i">
-            </metrica-passport-tile-sticks>
-          </grid-item>
-          <!--/Тайл "Стики"-->
-
-          <!--Тайл "График показателей по времени"-->
-          <grid-item class="dc-widget-grid__item"
-                     :x="gridTilesLayout[3].x"
-                     :y="gridTilesLayout[3].y"
-                     :w="gridTilesLayout[3].w"
-                     :h="gridTilesLayout[3].h"
-                     :i="gridTilesLayout[3].i"
-                     drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-line-chart :title="gridTilesLayout[3].i" ref="metricaPassportLineChart">
-            </metrica-passport-tile-line-chart>
-          </grid-item>
-          <!--/Тайл "График показателей по времени"-->
-
-          <!--Тайл "Таблица-список объектов"-->
-          <grid-item class="dc-widget-grid__item"
-                     :x="gridTilesLayout[4].x"
-                     :y="gridTilesLayout[4].y"
-                     :w="gridTilesLayout[4].w"
-                     :h="gridTilesLayout[4].h"
-                     :i="gridTilesLayout[4].i"
-                     drag-allow-from=".dc-widget-grid__item__header"
-                     drag-ignore-from="input">
-            <metrica-passport-table :title="gridTilesLayout[4].i" ref="metricaPassportTable">
-            </metrica-passport-table>
-          </grid-item>
-          <!--/Тайл "Таблица-список объектов"-->
         </grid-layout>
       </el-main>
-      <!--/Область контента-->
     </el-container>
   </el-container>
 </template>
 
-
 <script>
-  // TODO: импортируем компоненты сюда...
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-
-  import MetricaPassportTilePieChart from "./MetricaPassportTilePieChart"
-  import MetricaPieChartAlertsList from "./MetricaPassportTileAlertsList"
-  // import MetricaPassportTileCurrentValues from "./MetricaPassportTileCurrentValues"
-  import MetricaPassportTileSticks from "./MetricaPassportTileSticks"
-  import MetricaPassportTileLineChart from "./MetricaPassportTileLineChart"
-  import MetricaPassportTable from "./MetricaPassportTileTable"
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import PageAside from "../PageAside";
+  import AlarmPassportTileLineChart from "./AlarmPassportTileLineChart";
 
   export default {
-    // TODO: ...и сюда
+    name: "AlarmViewData",
     components: {
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
-      MetricaPassportTilePieChart,
-      MetricaPieChartAlertsList,
-      // MetricaPassportTileCurrentValues,
-      MetricaPassportTileSticks,
-      MetricaPassportTileLineChart,
-      MetricaPassportTable,
+      AlarmPassportTileLineChart: AlarmPassportTileLineChart
+    },
+    data() {
+      return {
+        // Список тайлов виджетов для грида макета
+        gridTilesLayout: [
+          {i: 'График показателей', x: 7, y: 0, w: 17, h: 4}
+        ],
+        headerSwitch: false
+      };
     },
     computed: {
-      monitorViewData: function () {
-        return this.$store.state.monitorViewData.data
+      alarmViewData: function () {
+        return this.$store.state.alarmViewData.data
       }
     },
     beforeCreate: function () {
       let wid = sessionStorage.getItem('wid');
       let componentsRoute = funcUtils.getFromSessionStorage(wid);
       let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-      this.$store.dispatch('monitorViewDataSetCid', currentComponent.cid);
+      this.$store.dispatch('alarmViewDataSetCid', currentComponent.cid);
       let method = 'getData';
       let params = this.$route.params;
-      if (!funcUtils.isNotEmpty(params.ruleId) && !funcUtils.isNotEmpty(params.dateBeg)) {
+      if (!funcUtils.isNotEmpty(params.alarmId) && !funcUtils.isNotEmpty(params.dateBeg)) {
         method = 'restore';
         params = null;
       }
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
+      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.alarmViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
@@ -209,55 +138,10 @@
           alert(eventResponse.message);
         });
     },
-    data() {
-      return {
-        // Список тайлов виджетов для грида макета
-        gridTilesLayout: [
-          {i: 'Типы и уровни', x: 0, y: 0, w: 7, h: 4},
-          {i: 'Список алертов', x: 0, y: 3, w: 7, h: 4},
-          // {i: 'Текущие показатели', x: 7, y: 3, w: 2.5, h: 8},
-          {i: 'Стики', x: 7, y: 0, w: 17, h: 3.2},
-          {i: 'График показателей', x: 7, y: 0, w: 17, h: 4},
-          {i: 'Список объектов', x: 7, y: 5, w: 17, h: 4}
-        ],
-        headerSwitch: false
-      };
-    },
     methods: {
-      refresh: function () {
-        let alerts = this.$refs.metricaPassportAlerts;
-        let table = this.$refs.metricaPassportTable;
-        let wid = sessionStorage.getItem('wid');
-        let componentsRoute = funcUtils.getFromSessionStorage(wid);
-        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-        let methodName;
-        let requestBody;
-        if (table.selectedObjects.length > 0) {
-          table.selectedObjects = [];
-          methodName = 'selectObjects';
-          requestBody = {ids: table.selectedObjects};
-        } else if (alerts.selectedAlarms.length > 0) {
-          alerts.selectedAlarms = [];
-          methodName = 'selectAlarms';
-          requestBody = {ids: alerts.selectedAlarms};
-        }
-        if (methodName && requestBody) {
-          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, methodName);
-          let requestParam = new RequestEntity.RequestParam(requestHead, requestBody);
-          RequstApi.sendHttpRequest(requestParam)
-            .then(eventResponse => {
-              if (eventResponse.status === 200) {
-                this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
-              }
-            })
-            .catch(eventResponse => {
-              alert(eventResponse.message);
-            });
-        }
-      },
       getPrev: function () {
         funcUtils.getPrevComponent(() => {
-          funcUtils.getPrevPage(this.$router, this.$store.state.monitorDict.routeName);
+          funcUtils.getPrevPage(this.$router, this.$store.state.monitorViewData.routeName);
         });
       }
     }
@@ -350,7 +234,7 @@
         align-items: center;
         background: #28282e;
 
-        .dc-button-icon-small:last-child  {
+        .dc-button-icon-small:last-child {
           margin-left: 0;
           margin-top: 5px;
         }

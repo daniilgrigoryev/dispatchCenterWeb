@@ -1,5 +1,5 @@
 <template>
-  <div class="dc-alerts-wrapper">
+  <div class="dc-alerts-wrapper" style="height: 100%;">
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -14,7 +14,6 @@
         </div>
 
         <div class="dc-widget-grid__item__header__buttons">
-
           <el-tooltip class="item" effect="dark" content="Раскрыть на весь экран" placement="bottom">
             <el-button size="mini" class="dc-button-icon-small">
               <img src="../../assets/img/icon-zoomin-small-white.svg" alt="">
@@ -31,61 +30,42 @@
     </div>
     <!--/Хедер тайла-->
 
-
-    <el-carousel :autoplay="false" ref="carousel" arrow="never" height="415px">
-      <!--Список алертов-->
-      <el-carousel-item>
-        <ul class="dc-alerts-list">
-          <li v-for="(item, index) in alertsList" v-bind:class="['dc-alerts-list__type ' + item.dcAlertsListType]"
-              v-bind:title="item.name" v-bind:name="index + 1">
-            <!--Алерты – немедленный уровень-->
-            <div v-bind:class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
-                 v-on:click.stop="setActiveAlertItem(index + 1); setCarouselItem(1)">
-              <div>
-                <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
-                <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
-              </div>
-              <div style="margin-left: auto; display: flex; align-items: center;">
-                <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
-                <el-button type="text" icon="el-icon-arrow-right"
-                           class="dc-alerts-list__type__level__toggler"></el-button>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </el-carousel-item>
-      <!--/Список алертов-->
-
-      <!--Развернутый алерт-->
-      <el-carousel-item v-if="activeAlertListItem" class="dc-alerts-list__type--active">
-        <div v-bind:class="'dc-alerts-list__type__level ' + alertsList[activeAlertListItem - 1].dcAlertsListTypeLevel"
-             v-on:click.stop="setCarouselItem(0)"
-             style="position: absolute; width: 100%;">
+    <!-- Список уровней алертов по типам -->
+    <ul id="dc_alerts_list" class="dc-alerts-list" style="height: 385px;">
+      <li v-for="(item, index) in alertsList"
+          :key="item.id"
+          :style="{display: (index + 1) === activeAlertListItem || activeAlertListItem === 0 ? 'block' : 'none'}"
+          :row-key="index + 1"
+          :class="'dc-alerts-list__type ' + item.dcAlertsListType"
+          :title="item.name">
+        <!--Алерты – немедленный уровень-->
+        <div :class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
+             @click="setActiveAlertItem(index + 1, item)">
           <div>
-            <div class="dc-alerts-list__type__level__heading">{{alertsList[activeAlertListItem - 1].name}}</div>
-            <div class="dc-alerts-list__type__level__subheading">{{alertsList[activeAlertListItem - 1].levelName}}</div>
+            <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
+            <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
           </div>
           <div style="margin-left: auto; display: flex; align-items: center;">
-            <div class="dc-alerts-list__type__level__value">{{alertsList[activeAlertListItem - 1].count}}</div>
-            <el-button type="text" icon="el-icon-arrow-right" class="dc-alerts-list__type__level__toggler"></el-button>
+            <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
+            <el-button type="text" :icon="(index + 1) === activeAlertListItem ? 'el-icon-arrow-down' : 'el-icon-arrow-right'"
+                       class="dc-alerts-list__type__level__toggler"></el-button>
           </div>
         </div>
-
-        <ul style="position: absolute; left: 0; right: 0;top: 44px; bottom: 0; overflow-y: auto;">
-          <!--<li v-bind:class="['dc-alerts-list-item', {'dc-alerts-list-item&#45;&#45;selected': alarm.selected}]"-->
-
-          <li v-bind:class="['dc-alerts-list-item', {'dc-alerts-list-item--selected': alarm.selected}]"
-              v-bind:style="{background: alertsList[activeAlertListItem - 1].selected ? '#b5aeb5 !important' : 'transparent'}"
-              v-for="(alarm, indexInner) in alertsList[activeAlertListItem - 1].alarms"
-              v-bind:title="alarm.note"
-              v-on:click="setActiveAlarm(alarm)">
+        <ul :style="{display: (index + 1) === activeAlertListItem ? 'block' : 'none', height: '335px', 'overflow-y': 'auto'}">
+          <li class="dc-alerts-list-item"
+              :style="{background: alarm.selected ? '#b5aeb5 !important' : 'transparent'}"
+              v-for="(alarm, indexInner) in item.alarms"
+              :title="alarm.note">
             <div class='flex-parent'>
               <div class="flex-child flex-parent flex-parent--center-cross mr24">
-                <el-checkbox v-model="alarm.selected"></el-checkbox>
+                <label>
+                  <input v-model="alarm.selected" :disabled="!alarm.selected && selectedAlarms.length >= 3"
+                         @click="setActiveAlarm(alarm)" type="checkbox"/>
+                </label>
               </div>
               <div class='flex-child'>
-                <div class="dc-alerts-list-item__name">
-                  <span>камера</span> ID 00-00-00000-0
+                <div @click="getAlarmPassport(alarm.id)" class="dc-alerts-list-item__name">
+                  <span>алерт</span> ID {{alarm.id}}
                 </div>
                 <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
               </div>
@@ -96,11 +76,11 @@
             </div>
           </li>
         </ul>
-      </el-carousel-item>
-      <!--/Развернутый алерт-->
-    </el-carousel>
-
-    <div v-if="alertsListSize <= 0" class="data-empty">[нет данных]</div>
+        <!--/Алерты – немедленный уровень-->
+      </li>
+    </ul>
+    <div v-if="alertsListSize <= 0" class="data-empty">data empty😂</div>
+    <!--/Список уровней алертов (по типам)-->
   </div>
 </template>
 
@@ -108,7 +88,7 @@
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
-
+  import "animate.css";
 
   export default {
     name: "metrica-pie-chart-alerts-list",
@@ -119,7 +99,6 @@
     },
     data() {
       return {
-        selectedCarouselItem: 0,
         selectedAlarms: [],
         activeAlertListItem: 0,
         alertsListSize: 0
@@ -168,6 +147,9 @@
           let alarms = data.alarms;
           let selectedAlarms = data.selectAlarms;
           this.selectedAlarms = selectedAlarms;
+          if (data.selectObj.length > 0) {
+            this.activeAlertListItem = 0;
+          }
           let rulesData = {};
           let rulesList = [];
           for (let i = 0; i < rules.length; i++) {
@@ -242,15 +224,81 @@
           return rulesList;
         }
       },
-      setActiveAlertItem: function (index) {
+      setActiveAlertItem: function (index, item) {
+        let containsClass = function(sourceElement, className) {
+          return sourceElement.className.indexOf(className) > -1;
+        };
+        let addClass = function (element, classes) {
+          if (typeof classes === "string") {
+            if (!containsClass(element, classes)) {
+              element.classList.add(classes);
+            }
+          } else if (typeof classes === "object") {
+            for (let i = 0; i < classes.length; i++) {
+              if (!containsClass(element, classes[i])) {
+                element.classList.add(classes[i]);
+              }
+            }
+          }
+        };
+        let removeClass = function (element, classes) {
+          if (typeof classes === "string") {
+            if (containsClass(element, classes)) {
+              element.classList.remove(classes);
+            }
+          } else if (typeof classes === "object") {
+            for (let i = 0; i < classes.length; i++) {
+              if (containsClass(element, classes[i])) {
+                element.classList.remove(classes[i]);
+              }
+            }
+          }
+        };
+        let ul = document.getElementsByClassName('dc-alerts-list__type');
+        let ulLi = document.getElementById('dc_alerts_list').querySelector('li[row-key=' + '\'' + index + '\'' + ']');
         if (index === this.activeAlertListItem) {
           this.activeAlertListItem = 0;
+          removeClass(ulLi, ['fadeInLeft', 'slow']);
+          addClass(ulLi, ['animated', 'fadeOut']);
+          ulLi.style.display = 'none';
+          removeClass(ulLi.querySelector('ul'), ['animated', 'fadeInLeft']);
+          ulLi.querySelector('ul').style.display = 'none';
+          removeClass(ulLi.querySelector('i'), 'el-icon-arrow-down');
+          addClass(ulLi.querySelector('i'), 'el-icon-arrow-right');
+          for (let i = 0; i < ul.length; i++) {
+            let el = ul[i];
+            removeClass(el, 'fadeOut');
+            addClass(el, 'fadeInRight');
+            // el.classList.remove('slow');
+            el.style.display = '';
+          }
         } else {
           this.activeAlertListItem = index;
+          for (let i = 0; i < ul.length; i++) {
+            let el = ul[i];
+            addClass(el, ['animated', 'faster']);
+            removeClass(el, 'fadeInRight');
+            addClass(el, 'fadeOut');
+            el.style.display = 'none';
+            el.querySelector('ul').style.display = 'none';
+          }
+          removeClass(ulLi, 'fadeOut');
+          addClass(ulLi, 'fadeInLeft');
+          removeClass(ulLi.querySelector('i'), 'el-icon-arrow-right');
+          addClass(ulLi.querySelector('i'), 'el-icon-arrow-down');
+          ulLi.style.display = '';
+          addClass(ulLi.querySelector('ul'), ['animated', 'faster', 'fadeInLeft']);
+          ulLi.querySelector('ul').style.display = '';
         }
+        setTimeout(() => {
+          for (let i = 0; i < ul.length; i++) {
+            let el = ul[i];
+            removeClass(el, ['animated', 'fadeInLeft', 'fadeOut', 'slow', 'fadeInRight', 'faster']);
+            removeClass(el.querySelector('ul'), ['animated', 'fadeInLeft', 'fadeOut', 'slow', 'fadeInRight', 'faster']);
+          }
+        }, 400);
       },
       setActiveAlarm: function (alarm) {
-        console.log(alarm);
         let self = this;
         if (alarm.selected) {
           alarm.selected = false;
@@ -266,7 +314,6 @@
             send();
           }
         }
-
         function send() {
           let wid = sessionStorage.getItem('wid');
           let componentsRoute = funcUtils.getFromSessionStorage(wid);
@@ -284,11 +331,22 @@
             });
         }
       },
-
-      setCarouselItem: function (index) {
-        this.$refs.carousel.setActiveItem(index);
+      getAlarmPassport: function (alarmId) {
+        let monitorViewData = this.$store.state.monitorViewData.data;
+        let params = {
+          'alarmId': alarmId,
+          'dateBeg': monitorViewData.dateBeg,
+          'dateEnd': monitorViewData.dateEnd
+        };
+        if (funcUtils.isNull(monitorViewData.dateBeg)) {
+          alert("Начальный период необходимо заполнить!");
+          return;
+        }
+        funcUtils.getNextComponent(this.$store.state.alarmViewData.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.alarmViewData.routeName, params);
+        });
       }
-    },
+    }
   }
 </script>
 
@@ -364,7 +422,7 @@
     background-repeat: no-repeat;
     background-position: 18px center;
     background-size: 18px;
-    cursor: pointer;
+    /*cursor: pointer;*/
 
     &:before {
       content: '';
@@ -447,7 +505,7 @@
 
     &:hover {
       background: rgba(114, 135, 165, 0.15) !important;
-      cursor: pointer;
+      /*cursor: pointer;*/
     }
 
     &.dc-alerts-list-item--selected {
@@ -456,6 +514,12 @@
   }
 
   .dc-alerts-list-item__name {
+    &:hover {
+      color: #0068ff;
+      cursor: pointer;
+    }
+
+    text-decoration: underline;
     text-transform: uppercase;
 
     span {
@@ -488,6 +552,4 @@
       transform: rotate(90deg);
     }
   }
-
-
 </style>

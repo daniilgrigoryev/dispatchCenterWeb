@@ -40,6 +40,11 @@ let vue = new Vue({
       funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
     }
     funcUtils.addToLocalStorage('lastActive', new Date().getTime());
+
+    if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
+      let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
+      RequstApi.sendSocketRequest(temp, this);
+    }
   },
   mounted: function () {
     this.activateTimer();

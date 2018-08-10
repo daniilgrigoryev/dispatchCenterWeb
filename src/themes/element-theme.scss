@@ -29,7 +29,7 @@ h4, h5 {
 }
 
 h5 {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.2;
 }
@@ -213,11 +213,11 @@ $--radio-checked-icon-color: $--color-primary !default;
 
 $--radio-input-border-color-hover: $--color-primary !default;
 
-$--radio-bordered-height: 40px !default;
+$--radio-bordered-height: 36px !default;
 $--radio-bordered-padding: 12px 20px 0 10px !default;
 $--radio-bordered-medium-padding: 10px 20px 0 10px !default;
 $--radio-bordered-small-padding: 8px 15px 0 10px !default;
-$--radio-bordered-mini-padding: 6px 15px 0 10px !default;
+$--radio-bordered-mini-padding: 4px 10px 0 10px !default;
 $--radio-bordered-medium-input-height: 14px !default;
 $--radio-bordered-medium-input-width: 14px !default;
 $--radio-bordered-medium-height: 36px !default;
@@ -226,16 +226,20 @@ $--radio-bordered-small-input-width: 12px !default;
 $--radio-bordered-small-height: 32px !default;
 $--radio-bordered-mini-input-height: 12px !default;
 $--radio-bordered-mini-input-width: 12px !default;
-$--radio-bordered-mini-height: 28px !default;
+$--radio-bordered-mini-height: 24px !default;
 
 $--radio-button-font-size: $--font-size-base !default;
-$--radio-button-checked-fill: $--color-primary !default;
-$--radio-button-checked-color: $--color-white !default;
-$--radio-button-checked-border-color: $--color-primary !default;
-$--radio-button-disabled-checked-fill: $--border-color-extra-light !default;
+$--radio-button-checked-fill: #7e8c91 !default;
+$--radio-button-checked-color: $--color-text-primary !default;
+$--radio-button-checked-border-color: #7e8c91 !default;
+$--radio-button-disabled-checked-fill: #7e8c91 !default;
 
 .el-radio__inner::after {
   background: white;
+}
+
+.el-radio-button--mini .el-radio-button__inner {
+  padding: 3px 15px !important;
 }
 
 /* Select

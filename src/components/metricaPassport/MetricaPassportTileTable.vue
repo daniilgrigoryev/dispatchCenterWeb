@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%;">
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -37,27 +37,27 @@
     <!--/Хедер тайла-->
 
     <!--Таблица объектов метрики-->
-    <div style="overflow-y: auto; height: 375px;">
-      <table id="objectsTable" class="dc-widget-grid__item__table-list">
+    <div style="overflow-y: auto; overflow-x: hidden; height: 375px;">
+      <float-thead-table :scrollContainer="scrollContainer" autoReflow :top="36" class="dc-widget-grid__item__table-list">
         <thead>
           <tr>
-            <th style="width: 55px; text-align: center;">
+            <th style="width: 55px;">
               <label for="allChecked">
-                <input id="allChecked" v-model="allChecked" :disabled="objectsLength > 3 && !allChecked"
+                <input id="allChecked" v-model="allChecked" :disabled="objectsLength > 4 && !allChecked"
                        v-on:click="selectAllCheckBox" type="checkbox"/>
               </label>
             </th>
             <th>Имя</th>
             <th>Описание</th>
             <th>Алертов</th>
-            <th>Первый</th>
-            <th>Последний</th>
-            <th>Прошло</th>
+            <th style="width: 150px">Первый</th>
+            <th style="width: 150px">Последний</th>
+            <th style="width: 150px">Прошло</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(item, index) in tableMetricaObjects">
-            <td style="width: 55px; text-align: center;">
+            <td style="width: 55px;">
               <label>
                 <input v-model="item.selected" :disabled="!item.selected && selectedObjects.length >= 3"
                        v-on:click="selectCheckBox(item)" type="checkbox"/>
@@ -66,12 +66,12 @@
             <td>{{item.object.name}}</td>
             <td>{{item.object.note}}</td>
             <td>{{item.object.alarms}}</td>
-            <td>{{item.firstAlarm}}</td>
-            <td>{{item.lastAlarm}}</td>
-            <td>{{item.differenceAlarm}}</td>
+            <td style="width: 150px">{{item.firstAlarm}}</td>
+            <td style="width: 150px">{{item.lastAlarm}}</td>
+            <td style="width: 150px">{{item.differenceAlarm}} сек</td>
           </tr>
         </tbody>
-      </table>
+      </float-thead-table>
     </div>
     <!--/Таблица объектов метрики-->
   </div>
@@ -81,6 +81,10 @@
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
+  import FloatThead from 'vue-floatthead';
+  import Vue from 'vue'
+
+  Vue.use(FloatThead);
 
   export default {
     name: "metrica-passport-table",
@@ -88,6 +92,9 @@
       title: {
         type: String
       }
+    },
+    components: {
+      FloatThead
     },
     data() {
       return {
@@ -108,6 +115,9 @@
       }
     },
     methods: {
+      scrollContainer(table) {
+        return table.parent();
+      },
       filterKeyChange() {
         let wid = sessionStorage.getItem('wid');
         let componentsRoute = funcUtils.getFromSessionStorage(wid);
@@ -125,6 +135,7 @@
           });
       },
       selectCheckBox(item) {
+        let self = this;
         if (item.selected) {
           item.selected = false;
           let index = this.selectedObjects.indexOf(item.object.id);
@@ -143,7 +154,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+              self.$store.dispatch('fillModule', {'selfStore': self.$store, 'event': eventResponse});
             }
           })
           .catch(eventResponse => {
@@ -151,13 +162,14 @@
           });
       },
       selectAllCheckBox() {
+        let self = this;
         this.selectedObjects = [];
         let allChecked = this.allChecked;
         let objects = this.tableMetricaObjects;
         if (!allChecked) {
           objects.forEach((obj) => {
             obj.selected = true;
-            this.selectedObjects.push(obj.id);
+            self.selectedObjects.push(obj.id);
           })
         } else {
           objects.forEach((obj) => {
@@ -172,7 +184,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+              self.$store.dispatch('fillModule', {'selfStore': self.$store, 'event': eventResponse});
             }
           })
           .catch(eventResponse => {
@@ -238,8 +250,26 @@
     text-transform: uppercase !important;
     width: 100%;
 
-    td {
-      text-align: center;
+    thead {
+      background: #050511;
+
+      th {
+        text-align: center;
+        color: #888b89;
+      }
+
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #353b4a;
+
+        td {
+          text-align: center;
+          padding: 3px 0;
+          color: #9b9b9c;
+        }
+      }
     }
   }
 
