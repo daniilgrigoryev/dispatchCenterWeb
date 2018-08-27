@@ -106,16 +106,6 @@
     },
     computed: {
       alertsList: function () {
-        let alerts = this.getAlerts();
-        let res;
-        if (alerts) {
-          res = alerts;
-        }
-        return res;
-      }
-    },
-    methods: {
-      getAlerts: function () {
         let formatDate = function (date) {
           let now = date;
           let year = "" + now.getFullYear();
@@ -141,6 +131,7 @@
           }
           return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
         };
+        let res;
         let data = this.$store.state.monitorViewData.data;
         if (data) {
           let rules = data.alarmRules;
@@ -221,9 +212,12 @@
             }
           }
           this.alertsListSize = rulesList.length;
-          return rulesList;
+          res = rulesList;
         }
-      },
+        return res;
+      }
+    },
+    methods: {
       setActiveAlertItem: function (index, item) {
         let containsClass = function(sourceElement, className) {
           return sourceElement.className.indexOf(className) > -1;

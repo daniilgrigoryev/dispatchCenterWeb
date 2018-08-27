@@ -3,7 +3,10 @@ import Router from 'vue-router'
 import Authorization from './../components/Authorization'
 import MonitorViewData from '../components/metricaPassport/MonitorViewData'
 import AlarmViewData from '../components/alarmPassport/AlarmViewData'
-import MonitorDict from '../components/MonitorDict'
+import MonitorReestr from '../components/MonitorReestr'
+import MonitorEdit from '../components/MonitorEdit'
+import AlarmRuleReestr from '../components/AlarmRuleReestr'
+import AlarmRuleEdit from '../components/AlarmRuleEdit'
 import PageNotFound from '../components/404'
 import * as funcUtils from "./../assets/js/utils/funcUtils";
 
@@ -31,9 +34,24 @@ const router = new Router({
       props: true
     },
     {
-      path: '/monitorDict',
-      name: 'MonitorDict',
-      component: MonitorDict
+      path: '/monitorReestr',
+      name: 'MonitorReestr',
+      component: MonitorReestr
+    },
+    {
+      path: '/monitorEdit',
+      name: 'MonitorEdit',
+      component: MonitorEdit
+    },
+    {
+      path: '/alarmRuleReestr',
+      name: 'AlarmRuleReestr',
+      component: AlarmRuleReestr
+    },
+    {
+      path: '/alarmRuleEdit',
+      name: 'AlarmRuleEdit',
+      component: AlarmRuleEdit
     },
     {
       path: '/404',

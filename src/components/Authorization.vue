@@ -67,7 +67,7 @@
               if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
                 let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, null, 'addWID'), null);
                 RequstApi.sendSocketRequest(temp, this);
-                funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
+                funcUtils.getNextPage(this.$router, this.$store.state.monitorReestr.routeName);
               }
             })
             .catch(eventResponse => {

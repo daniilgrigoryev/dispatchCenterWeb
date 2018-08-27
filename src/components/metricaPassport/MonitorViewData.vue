@@ -93,19 +93,6 @@
           </grid-item>
           <!--/Тайл "Список алертов"-->
 
-          <!--Тайл "Текущие показатели"-->
-          <!--<grid-item class="dc-widget-grid__item bg-transparent"
-                     :x="gridTilesLayout[2].x"
-                     :y="gridTilesLayout[2].y"
-                     :w="gridTilesLayout[2].w"
-                     :h="gridTilesLayout[2].h"
-                     :i="gridTilesLayout[2].i"
-                     drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-current-values :title="gridTilesLayout[2].i">
-            </metrica-passport-tile-current-values>
-          </grid-item>-->
-          <!--/Тайл "Текущие показатели"-->
-
           <!--Тайл "Стики"-->
           <grid-item class="dc-widget-grid__item"
                      :x="gridTilesLayout[2].x"
@@ -159,7 +146,6 @@
 
   import MetricaPassportTilePieChart from "./MetricaPassportTilePieChart"
   import MetricaPieChartAlertsList from "./MetricaPassportTileAlertsList"
-  // import MetricaPassportTileCurrentValues from "./MetricaPassportTileCurrentValues"
   import MetricaPassportTileSticks from "./MetricaPassportTileSticks"
   import MetricaPassportTileLineChart from "./MetricaPassportTileLineChart"
   import MetricaPassportTable from "./MetricaPassportTileTable"
@@ -176,7 +162,6 @@
       GridItem: VueGridLayout.GridItem,
       MetricaPassportTilePieChart,
       MetricaPieChartAlertsList,
-      // MetricaPassportTileCurrentValues,
       MetricaPassportTileSticks,
       MetricaPassportTileLineChart,
       MetricaPassportTable,
@@ -191,11 +176,11 @@
       let componentsRoute = funcUtils.getFromSessionStorage(wid);
       let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
       this.$store.dispatch('monitorViewDataSetCid', currentComponent.cid);
-      let method = 'getData';
-      let params = this.$route.params;
-      if (!funcUtils.isNotEmpty(params.ruleId) && !funcUtils.isNotEmpty(params.dateBeg)) {
-        method = 'restore';
-        params = null;
+      let method = 'restore';
+      let params = null;
+      if (funcUtils.isNotEmpty(params.ruleId) && funcUtils.isNotEmpty(params.dateBeg)) {
+        method = 'getData';
+        params = this.$route.params;
       }
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);
@@ -215,7 +200,6 @@
         gridTilesLayout: [
           {i: 'Типы и уровни', x: 0, y: 0, w: 7, h: 4},
           {i: 'Список алертов', x: 0, y: 3, w: 7, h: 4},
-          // {i: 'Текущие показатели', x: 7, y: 3, w: 2.5, h: 8},
           {i: 'Стики', x: 7, y: 0, w: 17, h: 3.2},
           {i: 'График показателей', x: 7, y: 0, w: 17, h: 4},
           {i: 'Список объектов', x: 7, y: 5, w: 17, h: 4}

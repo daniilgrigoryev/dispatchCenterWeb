@@ -10,8 +10,10 @@
           <el-col
             :span="12"
             class="flex-parent flex-parent--center-cross">
-            <h1>Проезды и нарушения</h1>
-            <div class="dc-widget-item__caption" style="margin-left: 10px;">год 6 мес. 24 дня 6ч 11м</div>
+            <el-button size="mini" class="dc-button-icon-medium" title="Вернуться на предыдущий экран">
+              <img src="../../assets/img/icon-back-blue.svg" alt="">
+            </el-button>
+            <h1>Паспорт алерта</h1>
           </el-col>
           <el-col :span="4" class="flex-parent flex-parent--end-main flex-parent--center-cross">
             <el-switch
@@ -60,27 +62,66 @@
           class="dc-widget-grid"
           :layout="gridTilesLayout"
           :col-num="24"
-          :row-height="100"
+          :row-height="10"
           :is-draggable="true"
           :is-resizable="true"
           :is-mirrored="false"
           :vertical-compact="true"
           :margin="[5, 5]"
           :use-css-transforms="true">
-          <!--Тайл "Типы и уровни"-->
-          <grid-item class="dc-widget-grid__item"
+
+          <!--Тайл "Описание и время" -->
+          <grid-item class="dc-widget-grid__item bg-transparent"
                      :x="gridTilesLayout[0].x"
                      :y="gridTilesLayout[0].y"
                      :w="gridTilesLayout[0].w"
                      :h="gridTilesLayout[0].h"
                      :i="gridTilesLayout[0].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <alarm-passport-tile-line-chart :title="gridTilesLayout[0].i" ref="alarmPassportLineChart">
-            </alarm-passport-tile-line-chart>
+            <alert-passport-tile-description :title="gridTilesLayout[0].i"></alert-passport-tile-description>
           </grid-item>
-          <!--/Тайл "Типы и уровни"-->
+          <!--/Тайл "Описание и время" -->
+
+          <!--Тайл "Показать данные" -->
+          <grid-item class="dc-widget-grid__item"
+                     :x="gridTilesLayout[1].x"
+                     :y="gridTilesLayout[1].y"
+                     :w="gridTilesLayout[1].w"
+                     :h="gridTilesLayout[1].h"
+                     :i="gridTilesLayout[1].i"
+                     drag-allow-from=".dc-widget-grid__item__header">
+            <alert-passport-tile-select-data :title="gridTilesLayout[1].i"></alert-passport-tile-select-data>
+          </grid-item>
+          <!--/Тайл "Показать данные" -->
+
+          <!--Тайл "Действия с алертом" -->
+          <grid-item class="dc-widget-grid__item bg-transparent"
+                     @moved="tileMoveEvent"
+                     :x="gridTilesLayout[2].x"
+                     :y="gridTilesLayout[2].y"
+                     :w="gridTilesLayout[2].w"
+                     :h="gridTilesLayout[2].h"
+                     :i="gridTilesLayout[2].i"
+                     drag-allow-from=".dc-widget-grid__item__header">
+            <alert-passport-tile-actions :title="gridTilesLayout[2].i"></alert-passport-tile-actions>
+          </grid-item>
+          <!--/Тайл "Действия с алертом" -->
+
+          <!--Тайл "Редактирование действия" -->
+          <grid-item class="dc-widget-grid__item"
+                     @moved="tileMoveEvent"
+                     :x="gridTilesLayout[3].x"
+                     :y="gridTilesLayout[3].y"
+                     :w="gridTilesLayout[3].w"
+                     :h="gridTilesLayout[3].h"
+                     :i="gridTilesLayout[3].i"
+                     drag-allow-from=".dc-widget-grid__item__header">
+            <alert-passport-edit-form :title="gridTilesLayout[3].i"></alert-passport-edit-form>
+          </grid-item>
+          <!--/Тайл "Редактирование действия" -->
         </grid-layout>
       </el-main>
+      <!--/Область контента-->
     </el-container>
   </el-container>
 </template>
@@ -91,7 +132,10 @@
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import PageAside from "../PageAside";
-  import AlarmPassportTileLineChart from "./AlarmPassportTileLineChart";
+  import AlertPassportTileDescription from "./AlertPassportTileDescription"
+  import AlertPassportTileSelectData from "./AlertPassportTileSelectData"
+  import AlertPassportTileActions from "./AlertPassportTileActions"
+  import AlertPassportEditForm from "./AlertPassportEditForm"
 
   export default {
     name: "AlarmViewData",
@@ -99,14 +143,22 @@
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
-      AlarmPassportTileLineChart: AlarmPassportTileLineChart
+      AlertPassportTileDescription,
+      AlertPassportTileSelectData,
+      AlertPassportTileActions,
+      AlertPassportEditForm
     },
     data() {
       return {
         // Список тайлов виджетов для грида макета
         gridTilesLayout: [
-          {i: 'График показателей', x: 7, y: 0, w: 17, h: 4}
+          {i: 'Описание и время', x: 0, y: 0, w: 7, h: 35},
+          {i: 'Показать данные', x: 0, y: 35, w: 7, h: 30},
+          {i: 'Действия с алертом', x: 7, y: 0, w: 6, h: 65},
+          {i: 'Редактирование действия', x: 13, y: 0, w: 11, h: 65},
+
         ],
+        isMainMenuCollapsed: true,
         headerSwitch: false
       };
     },
@@ -143,7 +195,13 @@
         funcUtils.getPrevComponent(() => {
           funcUtils.getPrevPage(this.$router, this.$store.state.monitorViewData.routeName);
         });
-      }
+      },
+      toggleMainMenu() {
+        this.isMainMenuCollapsed = !this.isMainMenuCollapsed;
+      },
+      tileMoveEvent: function(i, newX, newY){
+        console.log("MOVE i=" + i + ", X=" + newX + ", Y=" + newY);
+      },
     }
   }
 </script>
@@ -175,12 +233,12 @@
   }
 
   .dc-widget-grid__item__header__search {
-    width: 40%;
-    margin-left: 30px;
+    /*width: 40%;*/
+    /*margin-left: 30px;*/
     background: transparent;
 
     input {
-      background: rgba(126, 140, 145, 0.12);
+      background: rgba(126, 140, 145, 0.18);
       border: none;
     }
   }
@@ -193,7 +251,7 @@
     .dc-widget-grid__item__header {
       display: flex;
       align-items: flex-start;
-      padding: 4px;
+      padding: 4px 4px 4px 12px;
       font-weight: 300;
       transition: background-color 200ms linear 80ms;
 
@@ -353,7 +411,6 @@
     &.is-checked .el-switch__core::after {
       margin-left: -10px !important;
     }
-
   }
 
   .dc-button-icon-medium {
@@ -405,6 +462,4 @@
       height: inherit;
     }
   }
-
-
 </style>

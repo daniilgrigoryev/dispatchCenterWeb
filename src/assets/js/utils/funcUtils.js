@@ -1,5 +1,6 @@
 import * as RequestEntity from './../api/requestEntity';
 import {RequstApi} from './../api/requestApi';
+import * as ConstantUtils from './../utils/constantUtils';
 import $ from "jquery";
 
 export function guid() {
@@ -117,22 +118,21 @@ export function getNextComponent(beanName, callback) {
             let dataJson = JSON.parse(data);
             let respData = dataJson.data;
             let respError = dataJson.error;
-            if (null !== respData) {
+            if (!isNull(respData)) {
               if (dataJson.method === 'addCID') {
                 currentComponent = {
                   'count': componentsRoute.length,
-                  'href': window.location.href,
                   'cid': respData.cid,
                   'current': true
                 };
                 componentsRoute.push(currentComponent);
                 addToSessionStorage(wid, componentsRoute);
-                if (undefined !== callback) {
+                if (!isUndefined(callback)) {
                   callback();
                 }
               }
             } else {
-              if (null !== respError) {
+              if (!isNull(respError)) {
                 alert(respError.errorMsg);
               }
             }
@@ -167,12 +167,11 @@ export function getPrevComponent(callback) {
                 currentComponent.current = true;
               }
               addToSessionStorage(wid, componentsRoute);
-              // return currentComponent;
-              if (undefined !== callback) {
+              if (!isUndefined(callback)) {
                 callback();
               }
             }
-            if (null !== respError) {
+            if (!isNull(respError)) {
               alert(respError.errorMsg);
             }
           }
@@ -244,4 +243,8 @@ export function getPrevPage(router, pageName, params) {
   path[path.length - 1].current = true;
   addToSessionStorage('path', path);
   router.push({name: pageName, params});
+}
+
+export function lookupValue(dictName, key) {
+  return ConstantUtils[dictName][key];
 }

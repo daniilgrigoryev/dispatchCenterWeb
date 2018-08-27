@@ -4,17 +4,22 @@
             v-bind:class="{ 'dc-main-aside--collapsed': isMainMenuCollapsed }">
     <div class="dc-main-aside__logo" v-on:click="toggleMainMenu"></div>
     <el-menu default-active="1" :collapse="isMainMenuCollapsed">
-      <el-menu-item index="1">
-        <i class="el-icon-news"></i>
-        <span slot="title">Меню первое</span>
-      </el-menu-item>
+      <el-submenu index="1">
+        <template slot="title">
+          <i class="el-icon-news"></i>
+          <span slot="title">Меню первое</span>
+        </template>
+        <el-menu-item-group>
+          <el-menu-item index="1-1" v-on:click="getMonitorReestr()">Реестр мониторов</el-menu-item>
+          <el-menu-item index="1-2" v-on:click="getAlarmRuleReestr()">Реестр правил тревоги</el-menu-item>
+        </el-menu-item-group>
+      </el-submenu>
       <el-submenu index="2">
         <template slot="title">
           <i class="el-icon-location"></i>
           <span slot="title">Меню второе</span>
         </template>
         <el-menu-item-group>
-          <!--<span slot="title">Group One</span>-->
           <el-menu-item index="1-1" v-on:click="getPrev()">Назад</el-menu-item>
           <el-menu-item index="1-2" v-on:click="getNext()">Вперед</el-menu-item>
           <el-menu-item index="1-3" v-on:click="logout()">Выход</el-menu-item>
@@ -35,6 +40,8 @@
 </template>
 
 <script>
+  import * as RequestEntity from './../assets/js/api/requestEntity';
+  import {RequstApi} from './../assets/js/api/requestApi';
   import * as funcUtils from "./../assets/js/utils/funcUtils";
 
   export default {
@@ -43,6 +50,8 @@
       return {
         isMainMenuCollapsed: true
       };
+    },
+    beforeCreate: function () {
     },
     methods: {
       toggleMainMenu() {
@@ -68,6 +77,12 @@
       },
       logout: function () {
         this.$root.logout();
+      },
+      getMonitorReestr: function () {
+        this.$root.getMonitorReestr();
+      },
+      getAlarmRuleReestr: function () {
+        this.$root.getAlarmRuleReestr();
       }
     }
   }

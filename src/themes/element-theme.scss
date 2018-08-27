@@ -16,12 +16,13 @@ h1, h2, h3, h4, h5 {
 }
 
 h1 {
-  font-size: 23px !important;
+  font-size: 20px !important;
   line-height: 1.5 !important;
   text-transform: uppercase !important;
   letter-spacing: -0.5px !important;
   font-weight: 500 !important;
-  color: rgba(7, 206, 226, 0.5) !important;
+  color: #5a71e2 !important;
+  //color: rgba(7, 206, 226, 0.5) !important;
 }
 
 h4, h5 {
@@ -33,7 +34,6 @@ h5 {
   font-weight: 500;
   line-height: 1.2;
 }
-
 
 /* Colors
 -------------------------- */
@@ -67,7 +67,8 @@ $--color-danger-lighter: mix($--color-white, $--color-danger, 90%) !default;
 $--color-info-lighter: mix($--color-white, $--color-info, 90%) !default;
 
 $--color-text-primary: rgba(255, 255, 255, 0.80) !default;
-$--color-text-regular: #9f9fa0 !default;
+$--color-text-regular: white !default;
+//$--color-text-regular: #9f9fa0 !default;
 $--color-text-secondary: #909399 !default;
 $--color-text-placeholder: rgba(192, 196, 204, 0.45) !default;
 
@@ -234,8 +235,29 @@ $--radio-button-checked-color: $--color-text-primary !default;
 $--radio-button-checked-border-color: #7e8c91 !default;
 $--radio-button-disabled-checked-fill: #7e8c91 !default;
 
-.el-radio__inner::after {
-  background: white;
+.el-radio__input {
+  .el-radio__inner {
+    width: 18px;
+    height: 18px;
+  }
+
+  .el-radio__inner::after {
+    background: white;
+  }
+
+  &.is-checked {
+    .el-radio__inner {
+      border: 1px solid #0068ff;
+      background: #0068ff;
+    }
+
+    .el-radio__inner:after {
+      width: 16px;
+      height: 16px;
+      background: url("../element-theme-icons/icon-check-white-btn.svg") no-repeat center;
+      background-size: 70%;
+    }
+  }
 }
 
 .el-radio-button--mini .el-radio-button__inner {
@@ -391,6 +413,10 @@ $--input-small-height: 32px !default;
 $--input-mini-font-size: 12px !default;
 $--input-mini-height: 28px !default;
 
+.el-input__inner, .el-textarea textarea {
+  padding: 4px 10px;
+}
+
 .el-input__inner:focus, .el-textarea textarea:focus {
   background: rgba($--color-background-light-1, 0.8) !important;
   border-color: $--color-primary;
@@ -443,7 +469,7 @@ $--tab-vertical-header-width: 90px !default;
 $--tab-vertical-header-count-color: $--color-white !default;
 $--tab-vertical-header-count-fill: $--color-text-secondary !default;
 
-.el-tabs--card  .el-tabs__nav-scroll{
+.el-tabs--card .el-tabs__nav-scroll {
   background: $--color-black;
 }
 
@@ -451,11 +477,11 @@ $--tab-vertical-header-count-fill: $--color-text-secondary !default;
   border: none;
 }
 
-.el-tabs--card  .el-tabs__nav-scroll{
+.el-tabs--card .el-tabs__nav-scroll {
   background: $--color-black;
 }
 
-.el-tabs--card  .el-tabs__item.is-active{
+.el-tabs--card .el-tabs__item.is-active {
   background: $--color-background-light-1;
 }
 
@@ -673,7 +699,6 @@ $--popover-title-color: #a2a9b1 !default;
 
 .el-tooltip__popper .popper__arrow {
 }
-
 
 /* Time Spinner
 -------------------------- */
@@ -899,18 +924,25 @@ $--collapse-content-color: white !default;
 
 .el-collapse-item__header {
   position: relative;
+  margin-bottom: 10px;
   padding-left: 24px;
   text-transform: uppercase;
   font-weight: 500;
   border-bottom: 1px solid rgba(white, 0.15);
+  border-radius: 4px;
+  border-bottom: none;
 
   .el-collapse-item__arrow {
     position: absolute;
     left: 4px;
-    top: -12px;
+    top: -10px;
+    font-size: 16px;
+  }
+
+  &.is-active {
+    color: #0068ff;
   }
 }
-
 
 /* Transfer
 --------------------------*/
@@ -969,3 +1001,17 @@ $--breakpoints-spec: (
         'lg-and-down': (max-width: $--xl - 1),
         'xl-only' : (min-width: $--xl),
 );
+
+/* Form
+-------------------------- */
+
+.el-form-item__label {
+  font-size: 15px;
+  color: rgba(114, 135, 165, 0.85);
+
+}
+
+.el-form--label-top .el-form-item__label {
+  padding: 0;
+  line-height: 30px;
+}
