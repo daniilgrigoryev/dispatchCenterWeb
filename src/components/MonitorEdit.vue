@@ -143,7 +143,7 @@
         let res = {};
         let data = this.$store.state.monitorEdit.data;
         if (data) {
-          if (funcUtils.isNotEmpty(this.params.id)) {
+          if (funcUtils.isNotEmpty(this.params) && funcUtils.isNotEmpty(this.params.id)) {
             data.id = this.params.id;
           }
           this.status = funcUtils.lookupValue('statusNames', data.status);

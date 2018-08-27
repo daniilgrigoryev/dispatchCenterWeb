@@ -29,18 +29,18 @@
     <!-- Выбор тегов -->
     <div class="dc-inner-tile-box bg-transparent py3 mt-neg6">
       <div class="dc-alert-passport__selected-tags-number">
-        выбрано: <span class="active">3</span> из <span>7</span>
+        выбрано: <span class="active">{{ countSelectedTags }}</span> из <span>{{ tags.length }}</span>
       </div>
     </div>
 
     <div class="dc-alert-passport__selected-tags-wrapper dc-inner-tile-box bg-transparent py3">
-      <template v-for="(tag, index) in tags">
-        <tag-selectable :tag="tag" @click="selectsTag(tag, index)"></tag-selectable>
-      </template>
+      <div v-for="(tag, index) in tags" @click="selectsTag(tag, index)">
+        <tag-selectable :tag="tag"></tag-selectable>
+      </div>
     </div>
     <!-- /Выбор тегов -->
 
-    <button :class="['dc-alert-passport__fab', {'active': countSelectedTags}]"
+    <button :class="['dc-alert-passport__fab', {'active': countSelectedTags > 0}]"
             title="Фильтр по выделенным">
     </button>
   </div>
@@ -66,9 +66,13 @@
     },
     computed: {
       countSelectedTags: function () {
-        return this.tags.find(element => {
-          return element.selected === true;
+        let count = 0;
+        this.selectedTags.forEach(element => {
+          if (element.selected === true) {
+            count++;
+          }
         });
+        return count;
       },
       tags: function () {
         let res = [];
@@ -90,8 +94,7 @@
     },
     methods: {
       selectsTag: function (tag, index) {
-        debugger;
-        if (tag.selected) {
+        if (!tag.selected) {
           this.selectedTags.splice(index, 1);
         } else {
           this.selectedTags.push(tag);

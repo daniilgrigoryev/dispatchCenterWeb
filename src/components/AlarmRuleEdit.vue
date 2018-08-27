@@ -204,7 +204,6 @@
         let res = {};
         let data = this.$store.state.alarmRuleEdit.data;
         if (data) {
-          debugger;
           this.statusId = funcUtils.lookupValue('statusNames', data.rule.status);
           this.levelId = funcUtils.lookupValue('levelNames', data.rule.level);
           let levels = ConstantUtils.levelNames;
@@ -244,7 +243,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+              this.$root.getAlarmRuleReestr();
             }
           })
           .catch(eventResponse => {
@@ -252,6 +251,22 @@
           });
       },
       deleteAlarmRule: function () {
+        let wid = sessionStorage.getItem('wid');
+        let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, 'deleteAlarmRule');
+        let requestParam = new RequestEntity.RequestParam(requestHead, null);
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              let response = JSON.parse(eventResponse.response);
+              if (response.data == true) {
+                this.$root.getAlarmRuleReestr();
+              }
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
       }
     }
   }
