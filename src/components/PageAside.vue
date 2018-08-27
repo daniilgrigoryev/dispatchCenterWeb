@@ -12,6 +12,7 @@
         <el-menu-item-group>
           <el-menu-item index="1-1" v-on:click="getMonitorReestr()">Реестр мониторов</el-menu-item>
           <el-menu-item index="1-2" v-on:click="getAlarmRuleReestr()">Реестр правил тревоги</el-menu-item>
+          <el-menu-item index="1-2" v-on:click="getMonitorDict()">Список мониторов</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
       <el-submenu index="2">
@@ -77,6 +78,9 @@
       },
       logout: function () {
         this.$root.logout();
+      },
+      getMonitorDict: function () {
+        this.$root.getMonitorDict();
       },
       getMonitorReestr: function () {
         this.$root.getMonitorReestr();

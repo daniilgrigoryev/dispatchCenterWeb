@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import monitorDict from './modules/monitorDict';
 import monitorViewData from './modules/monitorViewData';
 import alarmViewData from './modules/alarmViewData';
 import monitorReestr from './modules/monitorReestr';
@@ -13,7 +14,7 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
     cid: null,
-    modulesNames: ['monitorReestr', 'monitorEdit', 'alarmRuleReestr', 'alarmRuleEdit', 'monitorViewData', 'alarmViewData']
+    modulesNames: ['monitorReestr', 'monitorEdit', 'alarmRuleReestr', 'alarmRuleEdit', 'monitorDict', 'monitorViewData', 'alarmViewData']
   },
   mutations: {},
   actions: {
@@ -61,6 +62,7 @@ const store = new Vuex.Store({
     monitorEdit,
     alarmRuleReestr,
     alarmRuleEdit,
+    monitorDict,
     monitorViewData,
     alarmViewData
   }

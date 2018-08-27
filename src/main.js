@@ -37,20 +37,6 @@ let vue = new Vue({
     }
     funcUtils.addToLocalStorage('lastActive', new Date().getTime());
 
-    if (funcUtils.isNull(localStorage.getItem('monitorReestr'))) {
-      funcUtils.addToLocalStorage('monitorReestr', {
-        monitorReestrView: null,
-        monitorEdit: null
-      });
-    }
-
-    if (funcUtils.isNull(localStorage.getItem('alarmRuleReestr'))) {
-      funcUtils.addToLocalStorage('alarmRuleReestr', {
-        alarmRuleReestrView: null,
-        alarmRuleEdit: null
-      });
-    }
-
     if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
       let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
       RequstApi.sendSocketRequest(temp, this);
@@ -97,6 +83,12 @@ let vue = new Vue({
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
       funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
       funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleReestr.routeName);
+    },
+    getMonitorDict: function () {
+      funcUtils.removeAllComponents();
+      sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
+      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+      funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
     },
     activateTimer: function () {
       $("body").bind("mousemove keypress mousedown", (function (e) {

@@ -176,11 +176,11 @@
       let componentsRoute = funcUtils.getFromSessionStorage(wid);
       let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
       this.$store.dispatch('monitorViewDataSetCid', currentComponent.cid);
-      let method = 'restore';
-      let params = null;
-      if (funcUtils.isNotEmpty(params.ruleId) && funcUtils.isNotEmpty(params.dateBeg)) {
-        method = 'getData';
-        params = this.$route.params;
+      let method = 'getData';
+      let params = this.$route.params;
+      if (!funcUtils.isNotEmpty(params.ruleId) && !funcUtils.isNotEmpty(params.dateBeg)) {
+        method = 'restore';
+        params = null;
       }
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);

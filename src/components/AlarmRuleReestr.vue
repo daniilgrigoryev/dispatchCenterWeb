@@ -10,7 +10,7 @@
           <el-col
             :span="12"
             class="flex-parent flex-parent--center-cross">
-            <h1>Список мониторов</h1>
+            <h1>Список правил тревоги</h1>
             <!--<div class="dc-widget-item__caption" style="margin-left: 10px;">год 6 мес. 24 дня 6ч 11м</div>-->
           </el-col>
           <el-col :span="4" class="flex-parent flex-parent--end-main flex-parent--center-cross">
@@ -54,41 +54,45 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
+        <!--<el-date-picker v-model="dateBeg" format="dd.MM.yyyy" type="date" placeholder="Pick a start">
+             </el-date-picker>
+             <el-date-picker v-model="dateEnd" format="dd.MM.yyyy" type="date" placeholder="Pick a end">
+       </el-date-picker>-->
         <table>
           <thead>
-            <tr>
-              <td style="padding: 5px;">Имя модели</td>
-              <td style="padding: 5px;">Название правила</td>
-              <td style="padding: 5px;">Имя типа объекта</td>
-              <td style="padding: 5px;">Описание</td>
-              <td style="padding: 5px;"></td>
-            </tr>
+          <tr>
+            <td style="padding: 5px;">Тип источника метрики</td>
+            <td style="padding: 5px;">Уровень поднимаемой тревоги</td>
+            <td style="padding: 5px;">Статус</td>
+            <td style="padding: 5px;">Описание</td>
+            <td style="padding: 5px;"></td>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="monitor in monitors">
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.modelName }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.name }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
-              <td style="padding: 5px; border: 1px solid grey">
-                <el-button v-on:click="editMonitor(monitor.id)" round type="primary">Редактировать монитор</el-button>
-              </td>
-            </tr>
+          <tr v-for="alaramRule in alarmRules">
+            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.sourceTypeName }}</td>
+            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.levelName }}</td>
+            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.statusName }}</td>
+            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.note }}</td>
+            <td style="padding: 5px; border: 1px solid grey">
+              <el-button v-on:click="editAlarmRule(alaramRule.id)" round type="primary">Редактировать правило</el-button>
+            </td>
+          </tr>
           </tbody>
         </table>
 
         <div style="display: flex; align-items: center; margin-top: 25px;">
-          <div>Модель</div>
-          <el-select style="min-width: 500px" v-model="modelId" placeholder="Select">
+          <div>Тип метрики</div>
+          <el-select style="min-width: 500px" v-model="sourceId" placeholder="Select">
             <el-option label=" " :value="null"></el-option>
             <el-option
-              v-for="item in modelDict"
-              :key="item.id"
-              :label="item.description"
-              :value="item.id">
+              v-for="item in monitorDict"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
-          <el-button :disabled="null === modelId" v-on:click="createNewMonitor()" round type="primary">Создать новый монитор</el-button>
+          <el-button :disabled="null === sourceId" v-on:click="createNewAlarmRule()" round type="primary">Создать новое правило</el-button>
         </div>
       </el-main>
       <!--/Область контента-->
@@ -104,25 +108,25 @@
   import PageAside from "./PageAside";
 
   export default {
-    name: "MonitorReestr",
+    name: "AlarmRuleReestr",
     components: {
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
     },
-    mounted: function () {
+    beforeCreate: function () {
       let wid = sessionStorage.getItem('wid');
-      let monitorReestr = funcUtils.getfromLocalStorage('monitorReestr');
-      if (funcUtils.isNull(monitorReestr)) {
-        monitorReestr = {
-          monitorReestrView: null,
-          monitorEdit: null
+      let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
+      if (funcUtils.isNull(alarmRuleReestr)) {
+        alarmRuleReestr = {
+          alarmRuleReestrView: null,
+          alarmRuleEdit: null
         };
-        funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
+        funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
       }
       let getData = (methodName) => {
-        let cid = monitorReestr.monitorReestrView;
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.monitorReestr.bean, methodName);
+        let cid = alarmRuleReestr.alarmRuleReestrView;
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.alarmRuleReestr.bean, methodName);
         let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -134,8 +138,8 @@
             alert(eventResponse.message);
           });
       };
-      if (funcUtils.isNull(monitorReestr.monitorReestrView)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorReestr.bean, null);
+      if (funcUtils.isNull(alarmRuleReestr.alarmRuleReestrView)) {
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.alarmRuleReestr.bean, null);
         let requestParam = new RequestEntity.RequestParam(requestHead, null);
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -147,8 +151,8 @@
                 let respError = dataJson.error;
                 if (!funcUtils.isNull(respData)) {
                   if (dataJson.method === 'addCID') {
-                    monitorReestr.monitorReestrView = respData.cid;
-                    funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
+                    alarmRuleReestr.alarmRuleReestrView = respData.cid;
+                    funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
                     getData('getData');
                   }
                 } else {
@@ -166,8 +170,8 @@
         getData('restore');
       }
 
-      if (funcUtils.isNull(monitorReestr.monitorEdit)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorEdit.bean, null);
+      if (funcUtils.isNull(alarmRuleReestr.alarmRuleEdit)) {
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.alarmRuleEdit.bean, null);
         let requestParam = new RequestEntity.RequestParam(requestHead, null);
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -179,8 +183,8 @@
                 let respError = dataJson.error;
                 if (!funcUtils.isNull(respData)) {
                   if (dataJson.method === 'addCID') {
-                    monitorReestr.monitorEdit = respData.cid;
-                    funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
+                    alarmRuleReestr.alarmRuleEdit = respData.cid;
+                    funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
                   }
                 } else {
                   if (!funcUtils.isNull(respError)) {
@@ -195,7 +199,7 @@
           });
       }
 
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getModelDict');
+      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getMonitorDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
@@ -206,7 +210,13 @@
               let respData = dataJson.data;
               let respError = dataJson.error;
               if (!funcUtils.isNull(respData)) {
-                this.modelDict = respData;
+                this.monitorDict = [];
+                respData.forEach((monitor) => {
+                  this.monitorDict.push({
+                    label: funcUtils.lookupValue('sourceTypeNames', monitor.modelId),
+                    value: monitor.id
+                  });
+                });
               } else {
                 if (!funcUtils.isNull(respError)) {
                   alert(respError.errorMsg);
@@ -221,36 +231,46 @@
     },
     data() {
       return {
-        modelId: null,
-        modelDict: null,
+        sourceId: null,
+        monitorDict: null,
         headerSwitch: false
       }
     },
     computed: {
-      monitors: function() {
+      alarmRules: function () {
         let res;
-        let data = this.$store.state.monitorReestr.data;
+        let data = this.$store.state.alarmRuleReestr.data;
         if (data) {
+          let alarmDicts = data.data;
+          if (funcUtils.isNotEmpty(alarmDicts)) {
+            alarmDicts.forEach((dict) => {
+              dict.sourceTypeName = funcUtils.lookupValue('sourceTypeNames', dict.sourceType);
+              dict.levelName = funcUtils.lookupValue('levelNames', dict.level);
+              dict.statusName = funcUtils.lookupValue('statusNames', dict.status);
+            });
+          }
           res = data.data;
         }
         return res;
       }
     },
     methods: {
-      editMonitor: function (ruleId) {
+      editAlarmRule: function (alaramRuleId) {
         let params = {
-          'id': ruleId
+          'id': alaramRuleId
         };
-        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
+        funcUtils.getNextComponent(this.$store.state.alarmRuleEdit.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleEdit.routeName, params);
         });
       },
-      createNewMonitor: function () {
+      createNewAlarmRule: function () {
         let params = {
-          'modelId': this.modelId
+          'executerId': 1,
+          'sourceType': 1,
+          'sourceId': this.sourceId
         };
-        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
+        funcUtils.getNextComponent(this.$store.state.alarmRuleEdit.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleEdit.routeName, params);
         });
       }
     }
@@ -343,7 +363,7 @@
         align-items: center;
         background: #28282e;
 
-        .dc-button-icon-small:last-child  {
+        .dc-button-icon-small:last-child {
           margin-left: 0;
           margin-top: 5px;
         }

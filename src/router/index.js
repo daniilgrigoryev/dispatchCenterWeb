@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Authorization from './../components/Authorization'
+import MonitorDict from '../components/MonitorDict'
 import MonitorViewData from '../components/metricaPassport/MonitorViewData'
 import AlarmViewData from '../components/alarmPassport/AlarmViewData'
 import MonitorReestr from '../components/MonitorReestr'
@@ -20,6 +21,11 @@ const router = new Router({
       path: '/',
       name: 'Authorization',
       component: Authorization
+    },
+    {
+      path: '/monitorDict',
+      name: 'MonitorDict',
+      component: MonitorDict
     },
     {
       path: '/monitorViewData',
