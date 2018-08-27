@@ -52,7 +52,7 @@ let vue = new Vue({
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
-          if (eventResponse.status === 200) {
+          /*if (eventResponse.status === 200) {
             let data = eventResponse.response;
             if (data.length > 0) {
               let dataJson = JSON.parse(data);
@@ -66,11 +66,18 @@ let vue = new Vue({
                 this.$router.push('/');
               }
             }
-          }
+          }*/
         })
         .catch(eventResponse => {
           alert(eventResponse.message);
         });
+      localStorage.removeItem('auth');
+      localStorage.removeItem('sid');
+      localStorage.removeItem('lastActive');
+      localStorage.removeItem('alarmRuleReestr');
+      localStorage.removeItem('monitorReestr');
+      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+      this.$router.push('/');
     },
     getMonitorReestr: function () {
       funcUtils.removeAllComponents();
