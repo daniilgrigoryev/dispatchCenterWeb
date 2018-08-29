@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  import Indicator from './components/Indicator.vue';
+  import Indicator from './components/SharedWidgets/Indicator.vue';
 
   export default {
     name: 'app',
