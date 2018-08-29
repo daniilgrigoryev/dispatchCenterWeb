@@ -29,18 +29,18 @@
     <!-- Выбор тегов -->
     <div class="dc-inner-tile-box bg-transparent py3 mt-neg6">
       <div class="dc-alert-passport__selected-tags-number">
-        выбрано: <span class="active">{{ countSelectedTags }}</span> из <span>{{ tags.length }}</span>
+        выбрано: <span class="active">{{ selectedTags.length }}</span> из <span>{{ tags.length }}</span>
       </div>
     </div>
 
     <div class="dc-alert-passport__selected-tags-wrapper dc-inner-tile-box bg-transparent py3">
-      <div v-for="(tag, index) in tags" @click="selectsTag(tag, index)">
+      <div v-for="(tag, index) in tags" @click="selectsTag(tag)">
         <tag-selectable :tag="tag"></tag-selectable>
       </div>
     </div>
     <!-- /Выбор тегов -->
 
-    <button :class="['dc-alert-passport__fab', {'active': countSelectedTags > 0}]"
+    <button :class="['dc-alert-passport__fab', {'active': selectedTags.length > 0}]"
             title="Фильтр по выделенным">
     </button>
   </div>
@@ -65,15 +65,6 @@
       };
     },
     computed: {
-      countSelectedTags: function () {
-        let count = 0;
-        this.selectedTags.forEach(element => {
-          if (element.selected === true) {
-            count++;
-          }
-        });
-        return count;
-      },
       tags: function () {
         let res = [];
         let data = this.$store.state.alarmViewData.data;
@@ -85,6 +76,7 @@
                 method.selected = false;
               }
               method.caption = method.descr;
+              method.id = funcUtils.guid();
               res.push(method);
             });
           }
@@ -93,11 +85,14 @@
       }
     },
     methods: {
-      selectsTag: function (tag, index) {
+      selectsTag: function (tag) {
         if (!tag.selected) {
-          this.selectedTags.splice(index, 1);
+          let index = this.selectedTags.indexOf(tag.id);
+          if (index !== -1) {
+            this.selectedTags.splice(index, 1);
+          }
         } else {
-          this.selectedTags.push(tag);
+          this.selectedTags.push(tag.id);
         }
       }
     }

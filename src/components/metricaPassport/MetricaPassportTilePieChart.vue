@@ -179,7 +179,6 @@
                   backgroundColor: 'rgba(44,50,61,0.7)',
                   borderWidth: 1,
                   formatter: function (params) {
-                    // debugger
                     return `
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div style="margin-right: 20px;">

@@ -5,10 +5,11 @@ const url = require('url');
 const publicPath = '';
 
 module.exports = (options = {}) => ({
-  entry: {
+  /*entry: {
     vendor: './src/assets/js/vendor/vendor.js',
     index: './src/main.js'
-  },
+  },*/
+  entry: ['babel-polyfill', './src/assets/js/vendor/vendor.js', './src/main.js'],
   output: {
     path: resolve(__dirname, 'dist'),
     filename: options.dev ? '[name].js' : '[name].js?[chunkhash]',
@@ -31,6 +32,10 @@ module.exports = (options = {}) => ({
       {
         test: /\.js$/,
         loader: 'babel-loader',
+        options: {
+          presets: ["es2015", "stage-0"],
+          plugins: ['transform-runtime']
+        },
         exclude: /node_modules/
       },
       {

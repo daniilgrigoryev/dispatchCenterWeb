@@ -42,8 +42,9 @@
           let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, this.userName, null, this.password);
           let requestHead = new RequestEntity.RequestHead(null, wid, null, null, 'login');
           let requestParam = new RequestEntity.RequestParam(requestHead, loginParams);
-          RequstApi.sendHttpRequest(requestParam)
-            .then(eventResponse => {
+          (async () => {
+            try {
+              let eventResponse = await RequstApi.sendHttpRequest(requestParam);
               if (eventResponse.status === 200) {
                 let data = eventResponse.response;
                 if (data.length > 0) {
@@ -69,10 +70,10 @@
                 RequstApi.sendSocketRequest(temp, this);
                 funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
               }
-            })
-            .catch(eventResponse => {
-              alert(eventResponse.message);
-            });
+            } catch (e) {
+              alert(e.message);
+            }
+          })();
         } else {
           let message = '';
           if (this.userName === '') {

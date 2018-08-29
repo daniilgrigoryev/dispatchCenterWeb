@@ -5,7 +5,7 @@ import * as funcUtils from "~/assets/js/utils/funcUtils";
 
 export class RequstApi {
   static sendSocketRequest(body, selfStore) {
-    if (funcUtils.isUndefined(this.socketInstance) || funcUtils.isNull(this.socketInstance)) {
+    if (funcUtils.isEmpty(this.socketInstance)) {
       this.socketInstance = new WebSocket(ConstantUtils.WS_URL);
       // When a connection is made
       this.socketInstance.onopen = () => {

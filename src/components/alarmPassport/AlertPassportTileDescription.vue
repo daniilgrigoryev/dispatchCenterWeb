@@ -166,7 +166,7 @@
               data.alarmLastTime = max | formatDateTime('DD.MM.YYYY hh:mm');
             }
           } else {
-            data.alarmLastTime = funcUtils.lookupValue('stateNames', data.state);
+            data.alarmLastTime = funcUtils.lookupValue('stateNames', data.state).label;
           }
 
           if (data.level !== undefined && data.level !== null) {

@@ -213,7 +213,7 @@
                 this.monitorDict = [];
                 respData.forEach((monitor) => {
                   this.monitorDict.push({
-                    label: funcUtils.lookupValue('sourceTypeNames', monitor.modelId),
+                    label: monitor.name,
                     value: monitor.id
                   });
                 });
@@ -244,9 +244,9 @@
           let alarmDicts = data.data;
           if (funcUtils.isNotEmpty(alarmDicts)) {
             alarmDicts.forEach((dict) => {
-              dict.sourceTypeName = funcUtils.lookupValue('sourceTypeNames', dict.sourceType);
-              dict.levelName = funcUtils.lookupValue('levelNames', dict.level);
-              dict.statusName = funcUtils.lookupValue('statusNames', dict.status);
+              dict.sourceTypeName = funcUtils.lookupValue('sourceTypeNames', dict.sourceType).label;
+              dict.levelName = funcUtils.lookupValue('levelNames', dict.level).label;
+              dict.statusName = funcUtils.lookupValue('statusNames', dict.status).label;
             });
           }
           res = data.data;

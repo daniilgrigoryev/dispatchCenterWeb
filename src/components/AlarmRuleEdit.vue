@@ -153,18 +153,24 @@
       }
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, this.params);
-      RequstApi.sendHttpRequest(requestParam)
-        .then(eventResponse => {
+      /*(async () => {
+        try {
+          let eventResponse = await RequstApi.sendHttpRequest(requestParam);
+        } catch (e) {
+          alert(e.message);
+        }
+      })();*/
+      (async () => {
+        try {
+          let eventResponse = await RequstApi.sendHttpRequest(requestParam);
           if (eventResponse.status === 200) {
             this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
           }
-        })
-        .catch(eventResponse => {
-          alert(eventResponse.message);
-        });
-
-      RequstApi.sendHttpRequest(new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getAlarmTemplate'), null))
-        .then(eventResponse => {
+        } catch (e) {
+          alert(e.message);
+        }
+        try {
+          let eventResponse = await RequstApi.sendHttpRequest(new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getAlarmTemplate'), null));
           if (eventResponse.status === 200) {
             let data = eventResponse.response;
             if (data.length > 0) {
@@ -180,10 +186,10 @@
               }
             }
           }
-        })
-        .catch(eventResponse => {
-          alert(eventResponse.message);
-        });
+        } catch (e) {
+          alert(e.message);
+        }
+      })();
     },
     data() {
       return {
@@ -204,28 +210,10 @@
         let res = {};
         let data = this.$store.state.alarmRuleEdit.data;
         if (data) {
-          this.statusId = funcUtils.lookupValue('statusNames', data.rule.status);
-          this.levelId = funcUtils.lookupValue('levelNames', data.rule.level);
-          let levels = ConstantUtils.levelNames;
-          this.levels = [];
-          for (let prop in levels) {
-            if (levels.hasOwnProperty(prop)) {
-              this.levels.push({
-                label: levels[prop],
-                value: prop
-              });
-            }
-          }
-          let statuses = ConstantUtils.statusNames;
-          this.statuses = [];
-          for (let prop in statuses) {
-            if (statuses.hasOwnProperty(prop)) {
-              this.statuses.push({
-                label: statuses[prop],
-                value: prop
-              });
-            }
-          }
+          this.statusId = funcUtils.lookupValue('statusNames', data.rule.status).value;
+          this.levelId = funcUtils.lookupValue('levelNames', data.rule.level).value;
+          this.levels = ConstantUtils.levelNames;
+          this.statuses = ConstantUtils.statusNames;
           res = data.rule;
         }
         return res;
@@ -233,13 +221,14 @@
     },
     methods: {
       saveAlarmRule: function () {
-        this.alarmRule.status = this.statusId;
-        this.alarmRule.level = this.levelId;
-        this.alarmRule.templateId = this.templateId;
+        let res = this.alarmRule;
+        res.status = this.statusId;
+        res.level = this.levelId;
+        res.templateId = this.templateId;
         let wid = sessionStorage.getItem('wid');
         let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
         let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, 'saveAlarmRule');
-        let requestParam = new RequestEntity.RequestParam(requestHead, {data: this.alarmRule});
+        let requestParam = new RequestEntity.RequestParam(requestHead, {data: res});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {

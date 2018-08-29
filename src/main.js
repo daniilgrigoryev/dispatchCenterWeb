@@ -50,27 +50,7 @@ let vue = new Vue({
       funcUtils.removeAllComponents();
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'logout');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
-      RequstApi.sendHttpRequest(requestParam)
-        .then(eventResponse => {
-          /*if (eventResponse.status === 200) {
-            let data = eventResponse.response;
-            if (data.length > 0) {
-              let dataJson = JSON.parse(data);
-              if (dataJson.method === 'logout') {
-                localStorage.removeItem('auth');
-                localStorage.removeItem('sid');
-                localStorage.removeItem('lastActive');
-                localStorage.removeItem('alarmRuleReestr');
-                localStorage.removeItem('monitorReestr');
-                funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
-                this.$router.push('/');
-              }
-            }
-          }*/
-        })
-        .catch(eventResponse => {
-          alert(eventResponse.message);
-        });
+      RequstApi.sendHttpRequest(requestParam);
       localStorage.removeItem('auth');
       localStorage.removeItem('sid');
       localStorage.removeItem('lastActive');

@@ -146,17 +146,8 @@
           if (funcUtils.isNotEmpty(this.params) && funcUtils.isNotEmpty(this.params.id)) {
             data.id = this.params.id;
           }
-          this.status = funcUtils.lookupValue('statusNames', data.status);
-          this.statusNames = [];
-          let statuses = ConstantUtils.statusNames;
-          for (let prop in statuses) {
-            if (statuses.hasOwnProperty(prop)) {
-              this.statusNames.push({
-                label: statuses[prop],
-                value: prop
-              });
-            }
-          }
+          this.status = data.status;
+          this.statusNames = ConstantUtils.statusNames;
           res = data;
         }
         return res;
@@ -164,14 +155,15 @@
     },
     methods: {
       saveMonitor: function () {
-        this.monitor.status = this.status;
+        let res = this.monitor;
+        res.status = this.status;
         if (funcUtils.isNotEmpty(this.params.modelId)) {
-          this.monitor.modelId = this.params.modelId;
+          res.modelId = this.params.modelId;
         }
         let wid = sessionStorage.getItem('wid');
         let monitorReestr = funcUtils.getfromLocalStorage('monitorReestr');
         let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, monitorReestr.monitorEdit, this.$store.state.monitorEdit.bean, 'saveMonitorRule');
-        let requestParam = new RequestEntity.RequestParam(requestHead, {data: this.monitor});
+        let requestParam = new RequestEntity.RequestParam(requestHead, {data: res});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {

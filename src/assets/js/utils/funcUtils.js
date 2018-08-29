@@ -245,6 +245,19 @@ export function getPrevPage(router, pageName, params) {
   router.push({name: pageName, params});
 }
 
+
+
 export function lookupValue(dictName, key) {
-  return ConstantUtils[dictName][key];
+  let res = {
+    label: null,
+    value: null
+  };
+  let dict = ConstantUtils[dictName];
+  for (let i = 0; i < dict.length; i++) {
+    let object = dict[i];
+    if (object.value == key) {
+      return object;
+    }
+  }
+  return res;
 }

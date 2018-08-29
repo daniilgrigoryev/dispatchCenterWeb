@@ -61,22 +61,6 @@
       },
       computed: {
         lineChart: function () {
-          let sortNumber = function (a, b) {
-            return a[Object.keys(a)[0]] - b[Object.keys(b)[0]];
-          };
-          let sortDate = function (a, b) {
-            let date1 = a[Object.keys(a)[0]];
-            let date2 = b[Object.keys(b)[0]];
-            let day1 = date1.substring(0, date1.indexOf('.'));
-            let day2 = date2.substring(0, date2.indexOf('.'));
-            let month1 = date1.substring(date1.indexOf('.') + 1, date1.lastIndexOf('.'));
-            let month2 = date2.substring(date2.indexOf('.') + 1, date2.lastIndexOf('.'));
-            let year1 = date1.substring(date1.lastIndexOf('.') + 1, date1.length);
-            let year2 = date2.substring(date2.lastIndexOf('.') + 1, date2.length);
-            let parsedDate1 = new Date(year1, month1 - 1, day1, '00', '00', '00');
-            let parsedDate2 = new Date(year2, month2 - 1, day2, '00', '00', '00');
-            return parsedDate1.getTime() - parsedDate2.getTime();
-          };
           let formatDate = function (date) {
             let now = date;
             let year = "" + now.getFullYear();
@@ -212,66 +196,58 @@
               series: null
             };
             let series = [];
-            let legend = [];
-            let chartDataSize = 0;
             let xAxis = {
-              type: 'category',
-              boundaryGap: false
+              type: 'time',
+              boundaryGap: false,
+              maxInterval: 3600 * 1000 * 24 * 10,
+              splitLine: {
+                show: false
+              },
+              axisLabel: {
+                formatter: (data) => {
+                  return formatDate(new Date(data));
+                },
+              },
             };
+            let chartDataSize = 0;
             let grafic = data.graph;
-            for (let i in grafic) {
-              if (grafic.hasOwnProperty(i)) {
-                let min = grafic[i].reduce((min, p) => p.d < min ? p.d : min, grafic[i][0].d);
-                legend.push({
-                  min: min,
-                  name: i
+            let sortableGraph = [];
+            for (let prop in grafic) {
+              if (grafic.hasOwnProperty(prop)) {
+                let graphVal = {
+                  name: prop,
+                  values: grafic[prop],
+                  min: null
+                };
+                graphVal.values.sort((a, b) => {
+                  return a.d - b.d;
                 });
+                graphVal.min = graphVal.values[0].d;
+                sortableGraph.push(graphVal);
               }
             }
-            legend.sort((a, b) => {
+            sortableGraph.sort((a, b) => {
               return a.min - b.min;
             });
-            for (let j = 0; j < legend.length; j++) {
-              let graph = grafic[legend[j].name];
-              if (!option.legend.data.includes(legend[j].name)) {
-                option.legend.data.push(legend[j].name);
-              }
-              let tempXAxisData = {};
-              graph.sort((a, b) => {
-                return a.d - b.d;
-              });
-              graph.forEach((item) => {
-                let formattedDate = formatDate(new Date(item.d));
-                let count = tempXAxisData[formattedDate];
-                if (!count) {
-                  count = {
-                    count: 0,
-                    srcDate: null
-                  };
-                }
-                count.count += item.v;
-                count.srcDate = item.d;
-                tempXAxisData[formattedDate] = count;
-              });
+            sortableGraph.forEach((item) => {
+              let name = item.name;
+              option.legend.data.push(name);
               let serie = {
-                name: legend[j].name,
+                name: name,
                 type: 'line',
                 data: [],
                 showSymbol: false,
                 lineStyle: {
                   width: 4,
                 },
-                smooth: true,
                 symbol: 'roundRect'
               };
-              for (let prop in tempXAxisData) {
-                if (tempXAxisData.hasOwnProperty(prop)) {
-                  serie.data.push([prop, tempXAxisData[prop].count]);
-                }
-              }
+              item.values.forEach((val) => {
+                serie.data.push([new Date(val.d), val.v]);
+              });
               chartDataSize += 1;
               series.push(serie);
-            }
+            });
             this.chartDataSize = chartDataSize;
             option.xAxis = xAxis;
             option.series = series;

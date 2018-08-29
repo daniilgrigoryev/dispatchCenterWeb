@@ -168,6 +168,21 @@
               borderWidth: 1,
               textStyle: {
                 color: "#c7cae2"
+              },
+              formatter: function (params) {
+                let res = '<div>';
+                  res += '<span>' + formatDate(new Date(params[0].axisValue)) + '</span>';
+                  res += '<div>';
+                    params.forEach((item) => {
+                      res += '<div>';
+                        res += item.marker;
+                        res += item.seriesName;
+                        res += ': ' + item.data[1];
+                      res += '</div>';
+                    });
+                  res += '</div>';
+                res += '</div>';
+                return res;
               }
             },
             legend: {
@@ -210,69 +225,83 @@
             },
             series: null
           };
-          let legend = [];
           let series = [];
           let xAxis = {
-            type: 'category',
-            boundaryGap: false
+            type: 'time',
+            boundaryGap: false,
+            maxInterval: 3600 * 1000 * 24 * 10,
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              formatter: (data) => {
+                return formatDate(new Date(data));
+              },
+            },
           };
           let grafic = data.graph;
           let chartDataSize = 0;
-          for (let k in grafic) {
-            if (grafic.hasOwnProperty(k)) {
-              let graph = grafic[k];
-              let graphName = '';
-              if (k != 0) {
+          let sortableGraph = [];
+          for (let prop in grafic) {
+            if (grafic.hasOwnProperty(prop)) {
+              let graphVal = {
+                id: +prop,
+                graphName: '',
+                values: [],
+                min: null
+              };
+              if (graphVal.id !== 0) {
                 data.objects.forEach((obj) => {
-                  if (obj.id == k) {
-                    graphName = ' ' + obj.name;
+                  if (obj.id === graphVal.id) {
+                    graphVal.graphName = obj.name;
                   }
                 });
               }
-              for (let i = 0; i < data.items.length; i++) {
-                if (!option.legend.data.includes(data.items[i].name + graphName)) {
-                  option.legend.data.push(data.items[i].name + graphName);
-                }
-                if (!legend.includes(data.items[i].name)) {
-                  legend.push(data.items[i].name);
-                }
-              }
-              for (let j = 0; j < legend.length; j++) {
-                let tempXAxisData = {};
-                let xAxisData = graph[legend[j]];
-                xAxisData.sort((a, b) => {
+              let values = Object.entries(grafic[prop]);
+              values.forEach((item) => {
+                let value = {
+                  name: item[0],
+                  items: item[1]
+                };
+                value.items.sort((a,b) => {
                   return a.d - b.d;
                 });
-                xAxisData.forEach((item) => {
-                  let formattedDate = formatDate(new Date(item.d));
-                  let count = tempXAxisData[formattedDate];
-                  if (!count) {
-                    count = 0;
-                  }
-                  count += item.v;
-                  tempXAxisData[formattedDate] = count;
-                });
-                let serie = {
-                  name: legend[j] + graphName,
-                  type: 'line',
-                  data: [],
-                  showSymbol: false,
-                  lineStyle: {
-                    width: 4,
-                  },
-                  smooth: true,
-                  symbol: 'roundRect'
-                };
-                for (let prop in tempXAxisData) {
-                  if (tempXAxisData.hasOwnProperty(prop)) {
-                    serie.data.push([prop, tempXAxisData[prop]]);
-                  }
+                value.min = value.items[0].d;
+                if (graphVal.min > value.min || graphVal.min === null) {
+                  graphVal.min = value.min;
                 }
-                chartDataSize += 1;
-                series.push(serie);
-              }
+                graphVal.values.push(value);
+              });
+              graphVal.values.sort((a,b) => {
+                return a.min - b.min;
+              });
+              sortableGraph.push(graphVal);
             }
           }
+          sortableGraph.sort((a,b) => {
+            return a.min - b.min;
+          });
+          sortableGraph.forEach((item) => {
+            item.values.forEach((itemVal) => {
+              let name = itemVal.name + ' ' + item.graphName;
+              option.legend.data.push(name);
+              let serie = {
+                name: name,
+                type: 'line',
+                data: [],
+                showSymbol: false,
+                lineStyle: {
+                  width: 4,
+                },
+                symbol: 'roundRect'
+              };
+              itemVal.items.forEach((val) => {
+                serie.data.push([new Date(val.d), val.v]);
+              });
+              chartDataSize += 1;
+              series.push(serie);
+            });
+          });
           this.chartDataSize = chartDataSize;
           option.xAxis = xAxis;
           option.series = series;

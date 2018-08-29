@@ -187,9 +187,6 @@
                 show: true,
               },
               axisLabel: {
-                /*formatter: (data) => {
-                  return data.substring(data.lastIndexOf('delemitter') + 10, data.length);
-                },*/
                 textStyle: {
                   color: "rgba(114, 135, 165, 0.85)"
                 }
@@ -211,6 +208,9 @@
           let alarms = data.alarms;
           let selectedAlarms = data.selectAlarms;
           let alarmsData = {};
+          alarms.sort((a,b) => {
+            return a.alarmTime - b.alarmTime;
+          });
           for (let i = 0; i < alarms.length; i++) {
             if (selectedAlarms.length > 0 && !selectedAlarms.includes(alarms[i].id)) {
               continue;
