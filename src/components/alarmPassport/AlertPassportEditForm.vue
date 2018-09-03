@@ -31,9 +31,9 @@
       class="dc-alert-passport__form">
       <el-collapse v-model="actionForm.activeTab">
         <el-collapse-item v-if="null !== actionForm.dataForm" title="Основные" name="1">
-          <div v-for="(value, key) in actionForm.dataForm.action.actionDataParse">
+          <div v-for="(value, key) in actionForm.dataForm">
             <el-form-item :label="key">
-              <el-input :disabled="actionForm.disableEdit" v-model="actionForm.dataForm.action.actionDataParse[key]"></el-input>
+              <el-input :disabled="actionForm.disableEdit" v-model="actionForm.dataForm[key]"></el-input>
             </el-form-item>
           </div>
         </el-collapse-item>
@@ -67,7 +67,7 @@
     mounted: function() {
       let vm = this;
       bus.$on('setActiveAction', function (payLoad) {
-        let item = payLoad;
+        vm.action = payLoad;
         vm.actionForm.disableEdit = payLoad.disabled;
         let wid = sessionStorage.getItem('wid');
         let componentsRoute = funcUtils.getFromSessionStorage(wid);
@@ -77,8 +77,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              item.action.actionDataParse = JSON.parse(eventResponse.response).data;
-              vm.actionForm.dataForm = item;
+              vm.actionForm.dataForm = JSON.parse(eventResponse.response).data;
             }
           })
           .catch(eventResponse => {
@@ -93,7 +92,8 @@
           activeTab: ['1'],
           dataForm: null,
           disableEdit: false
-        }
+        },
+        action: null
       }
     },
     methods: {
@@ -103,11 +103,11 @@
         let componentsRoute = funcUtils.getFromSessionStorage(wid);
         let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
         let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.alarmViewData.bean, 'encodeActionData');
-        let requestParam = new RequestEntity.RequestParam(requestHead, {actionType: this.actionForm.dataForm.action.actionType, data: this.actionForm.dataForm.action.actionDataParse});
+        let requestParam = new RequestEntity.RequestParam(requestHead, {actionType: this.action.action.actionType, data: this.actionForm.dataForm});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              vm.actionForm.dataForm.action.actionData = JSON.parse(eventResponse.response).data;
+              vm.action.action.actionData = JSON.parse(eventResponse.response).data;
             }
           })
           .catch(eventResponse => {
