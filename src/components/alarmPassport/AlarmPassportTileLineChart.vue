@@ -153,6 +153,21 @@
                 borderWidth: 1,
                 textStyle: {
                   color: "#c7cae2"
+                },
+                formatter: function (params) {
+                  let res = '<div>';
+                  res += '<span>' + formatDate(new Date(params[0].axisValue)) + '</span>';
+                  res += '<div>';
+                  params.forEach((item) => {
+                    res += '<div>';
+                    res += item.marker;
+                    res += item.seriesName;
+                    res += ': ' + item.data[1];
+                    res += '</div>';
+                  });
+                  res += '</div>';
+                  res += '</div>';
+                  return res;
                 }
               },
               legend: {

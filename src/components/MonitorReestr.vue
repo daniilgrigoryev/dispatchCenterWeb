@@ -101,7 +101,7 @@
   import {RequstApi} from './../assets/js/api/requestApi';
   import * as funcUtils from "./../assets/js/utils/funcUtils";
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-  import PageAside from "./PageAside";
+  import PageAside from "./SharedWidgets/PageAside";
 
   export default {
     name: "MonitorReestr",
@@ -127,7 +127,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+              this.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
           .catch(eventResponse => {
@@ -148,6 +148,7 @@
                 if (!funcUtils.isNull(respData)) {
                   if (dataJson.method === 'addCID') {
                     monitorReestr.monitorReestrView = respData.cid;
+                    this.$store.dispatch('monitorReestrSetCid', respData.cid);
                     funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
                     getData('getData');
                   }
@@ -180,6 +181,7 @@
                 if (!funcUtils.isNull(respData)) {
                   if (dataJson.method === 'addCID') {
                     monitorReestr.monitorEdit = respData.cid;
+                    this.$store.dispatch('monitorEditSetCid', respData.cid);
                     funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
                   }
                 } else {
@@ -218,6 +220,11 @@
         .catch(eventResponse => {
           alert(eventResponse.message);
         });
+
+      let self = this;
+      this.$store.watch(this.$store.getters.monitorReestrGetCommand, state => {
+        self.updateOnCommand(state);
+      })
     },
     data() {
       return {
@@ -237,6 +244,20 @@
       }
     },
     methods: {
+      updateOnCommand: function (resp) {
+        let wid = sessionStorage.getItem('wid');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.monitorReestr.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
       editMonitor: function (ruleId) {
         let params = {
           'id': ruleId

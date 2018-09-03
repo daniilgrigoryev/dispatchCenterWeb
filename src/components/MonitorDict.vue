@@ -73,12 +73,14 @@
   import {RequstApi} from './../assets/js/api/requestApi';
   import * as funcUtils from "./../assets/js/utils/funcUtils";
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-  import PageAside from "./PageAside";
+  import PageAside from "./SharedWidgets/PageAside";
+  import PageHeader from "./SharedWidgets/PageHeader";
 
   export default {
     name: "MonitorDict",
     components: {
       PageAside,
+      PageHeader,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
     },
@@ -89,7 +91,7 @@
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
           if (eventResponse.status === 200) {
-            this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+            this.$store.dispatch('fillModule', {'event': eventResponse});
           }
         })
         .catch(eventResponse => {

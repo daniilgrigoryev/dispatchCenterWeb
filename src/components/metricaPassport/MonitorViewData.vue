@@ -152,7 +152,7 @@
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
-  import PageAside from "../PageAside";
+  import PageAside from "../SharedWidgets/PageAside";
 
   export default {
     // TODO: ...и сюда
@@ -187,7 +187,7 @@
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
           if (eventResponse.status === 200) {
-            this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+            this.$store.dispatch('fillModule', {'event': eventResponse});
           }
         })
         .catch(eventResponse => {
@@ -207,8 +207,30 @@
         headerSwitch: false
       };
     },
+    mounted: function () {
+      let self = this;
+      this.$store.watch(this.$store.getters.monitorViewDataGetCommand, state => {
+        self.updateOnCommand(state);
+      })
+    },
     methods: {
-      refresh: function () {
+      updateOnCommand: function () {
+        let wid = sessionStorage.getItem('wid');
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, null);
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
+      refresh: function (resp) {
         let alerts = this.$refs.metricaPassportAlerts;
         let table = this.$refs.metricaPassportTable;
         let wid = sessionStorage.getItem('wid');
@@ -231,7 +253,7 @@
           RequstApi.sendHttpRequest(requestParam)
             .then(eventResponse => {
               if (eventResponse.status === 200) {
-                this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+                this.$store.dispatch('fillModule', {'event': eventResponse});
               }
             })
             .catch(eventResponse => {

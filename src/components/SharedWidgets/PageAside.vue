@@ -33,7 +33,7 @@
     </el-menu>
 
     <div class="dc-main-aside__user">
-      <img src="../assets/img/icon-user-white.svg" width="24" height="24" alt="">
+      <img src="../../assets/img/icon-user-white.svg" width="24" height="24" alt="">
       <span>Иван <br> Петров</span>
     </div>
   </el-aside>
@@ -41,15 +41,15 @@
 </template>
 
 <script>
-  import * as RequestEntity from './../assets/js/api/requestEntity';
-  import {RequstApi} from './../assets/js/api/requestApi';
-  import * as funcUtils from "./../assets/js/utils/funcUtils";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
 
   export default {
     name: "PageAside",
     data() {
       return {
-        isMainMenuCollapsed: true
+        isMainMenuCollapsed: true,
       };
     },
     beforeCreate: function () {
@@ -114,7 +114,7 @@
 
     .dc-main-aside__logo {
       height: 64px;
-      background: #7e8c91 url("../assets/img/logo-menu.svg") no-repeat center;
+      background: #7e8c91 url("../../assets/img/logo-menu.svg") no-repeat center;
       background-size: 42px;
     }
 

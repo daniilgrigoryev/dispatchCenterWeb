@@ -4,7 +4,8 @@ export default {
     cid: null,
     bean: 'AlarmView',
     routeName: 'AlarmViewData',
-    data: null
+    data: null,
+    command: null
   },
   mutations: {
     alarmViewDataSetCid(state, cid) {
@@ -12,6 +13,9 @@ export default {
     },
     alarmViewDataSetData(state, data) {
       state.data = data;
+    },
+    alarmViewDataSetCommand(state, command) {
+      state.command = command;
     }
   },
   actions: {
@@ -20,7 +24,12 @@ export default {
     },
     alarmViewDataSetData: ({commit}, payload) => {
       commit('alarmViewDataSetData', payload.data);
+    },
+    alarmViewDataSetCommand: ({commit}, payload) => {
+      commit('alarmViewDataSetCommand', payload.data);
     }
   },
-  getters: {}
+  getters: {
+    alarmViewDataGetCommand: state => () => state.command
+  }
 };

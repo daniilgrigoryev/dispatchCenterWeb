@@ -249,8 +249,8 @@ export function getPrevPage(router, pageName, params) {
 
 export function lookupValue(dictName, key) {
   let res = {
-    label: null,
-    value: null
+    label: '',
+    value: ''
   };
   let dict = ConstantUtils[dictName];
   for (let i = 0; i < dict.length; i++) {
@@ -260,4 +260,13 @@ export function lookupValue(dictName, key) {
     }
   }
   return res;
+}
+
+export function clearAll() {
+  localStorage.removeItem('auth');
+  localStorage.removeItem('sid');
+  localStorage.removeItem('lastActive');
+  localStorage.removeItem('alarmRuleReestr');
+  localStorage.removeItem('monitorReestr');
+  addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
 }

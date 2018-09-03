@@ -33,7 +33,7 @@
     <!-- Список уровней алертов по типам -->
     <ul id="dc_alerts_list" class="dc-alerts-list" style="height: 385px;">
       <li v-for="(item, index) in alertsList"
-          :key="item.id"
+          :key="item.uniqueKey"
           :style="{display: (index + 1) === activeAlertListItem || activeAlertListItem === 0 ? 'block' : 'none'}"
           :row-key="index + 1"
           :class="'dc-alerts-list__type ' + item.dcAlertsListType"
@@ -51,6 +51,10 @@
                        class="dc-alerts-list__type__level__toggler"></el-button>
           </div>
         </div>
+
+
+
+
         <ul :style="{display: (index + 1) === activeAlertListItem ? 'block' : 'none', height: '335px', 'overflow-y': 'auto'}">
           <li class="dc-alerts-list-item"
               :style="{background: alarm.selected ? '#b5aeb5 !important' : 'transparent'}"
@@ -71,7 +75,7 @@
               </div>
               <div class='flex-child' style="margin-left: auto;">
                 <div class="dc-alerts-list-item__date">{{alarm.alarmTime | formatDateTime('DD.MM.YYYY')}}</div>
-                <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('hh:mm')}}</div>
+                <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('HH:mm')}}</div>
               </div>
             </div>
           </li>
@@ -106,31 +110,6 @@
     },
     computed: {
       alertsList: function () {
-        let formatDate = function (date) {
-          let now = date;
-          let year = "" + now.getFullYear();
-          let month = "" + (now.getMonth() + 1);
-          if (month.length === 1) {
-            month = "0" + month;
-          }
-          let day = "" + now.getDate();
-          if (day.length === 1) {
-            day = "0" + day;
-          }
-          let hour = "" + now.getHours();
-          if (hour.length === 1) {
-            hour = "0" + hour;
-          }
-          let minute = "" + now.getMinutes();
-          if (minute.length === 1) {
-            minute = "0" + minute;
-          }
-          let second = "" + now.getSeconds();
-          if (second.length === 1) {
-            second = "0" + second;
-          }
-          return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
-        };
         let res;
         let data = this.$store.state.monitorViewData.data;
         if (data) {
@@ -143,69 +122,86 @@
           }
           let rulesData = {};
           let rulesList = [];
-          for (let i = 0; i < rules.length; i++) {
-            let rule = rulesData[rules[i].id];
-            if (undefined === rule) {
-              rule = {
-                id: rules[i].id,
-                name: rules[i].note,
+          let rulesObj = {};
+          rules.forEach((rule) => {
+            rulesObj[rule.id] = rule;
+          });
+
+          alarms.forEach((alarm) => {
+            let rule = rulesObj[alarm.alarmRuleId];
+            let uniqueKey = rule.id + rule.note + alarm.level;
+            let ruleData = rulesData[uniqueKey];
+            if (funcUtils.isUndefined(ruleData)) {
+              ruleData = {
+                id: rule.id,
+                name: rule.note,
                 count: 0,
-                level: rules[i].level,
+                level: rule.level,
                 alarmLastTime: null,
                 alarms: [],
-                alarmsNotes: []
+                alarmsNotes: [],
+                uniqueKey: uniqueKey
               };
               switch (rule.level) {
                 case 1: {
-                  rule.dcAlertsListType = 'dc-alerts-list__type--1';
-                  rule.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--low';
-                  rule.levelName = 'Незаметный';
+                  ruleData.dcAlertsListType = 'dc-alerts-list__type--1';
                   break;
                 }
                 case 2: {
-                  rule.dcAlertsListType = 'dc-alerts-list__type--2';
-                  rule.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--normal';
-                  rule.levelName = 'Низкий';
+                  ruleData.dcAlertsListType = 'dc-alerts-list__type--2';
                   break;
                 }
                 case 3: {
-                  rule.dcAlertsListType = 'dc-alerts-list__type--3';
-                  rule.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--moderate';
-                  rule.levelName = 'Нормальный';
+                  ruleData.dcAlertsListType = 'dc-alerts-list__type--3';
                   break;
                 }
                 case 4: {
-                  rule.dcAlertsListType = 'dc-alerts-list__type--4';
-                  rule.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--high';
-                  rule.levelName = 'Высокий';
+                  ruleData.dcAlertsListType = 'dc-alerts-list__type--4';
                   break;
                 }
                 case 5: {
-                  rule.dcAlertsListType = 'dc-alerts-list__type--5';
-                  rule.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--immediate';
-                  rule.levelName = 'Срочный';
+                  ruleData.dcAlertsListType = 'dc-alerts-list__type--5';
                   break;
                 }
               }
-              rulesData[rules[i].id] = rule;
+              ruleData.levelName = funcUtils.lookupValue('levelNames', alarm.level).label;
+              switch (alarm.level) {
+                case 1: {
+                  ruleData.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--low';
+                  break;
+                }
+                case 2: {
+                  ruleData.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--normal';
+                  break;
+                }
+                case 3: {
+                  ruleData.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--moderate';
+                  break;
+                }
+                case 4: {
+                  ruleData.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--high';
+                  break;
+                }
+                case 5: {
+                  ruleData.dcAlertsListTypeLevel = 'dc-alerts-list__type__level--immediate';
+                  break;
+                }
+              }
+              rulesData[uniqueKey] = ruleData;
             }
-          }
-          for (let j = 0; j < alarms.length; j++) {
-            let ruleData = rulesData[alarms[j].alarmRuleId];
             ruleData.count++;
-            let alarm = alarms[j];
             alarm.selected = false;
             if (!ruleData.alarmsNotes.includes(alarm.note)) {
               if (selectedAlarms.includes(alarm.id)) {
                 alarm.selected = true;
               }
               ruleData.alarmsNotes.push(alarm.note);
-              ruleData.alarms.push(alarms[j]);
+              ruleData.alarms.push(alarm);
             }
-            if (ruleData.alarmLastTime < alarms[j].alarmTime) {
-              ruleData.alarmLastTime = alarms[j].alarmTime;
+            if (ruleData.alarmLastTime < alarm.alarmTime) {
+              ruleData.alarmLastTime = alarm.alarmTime;
             }
-          }
+          });
           for (let prop in rulesData) {
             if (rulesData.hasOwnProperty(prop) && rulesData[prop].count > 0) {
               rulesList.push(rulesData[prop]);
@@ -354,6 +350,8 @@
   $-color-alert-type-1: #07cee2;
   $-color-alert-type-2: #8979b2;
   $-color-alert-type-3: #936152;
+  $-color-alert-type-4: #897213;
+  $-color-alert-type-5: #237e22;
 
   .dc-alerts-wrapper {
     display: flex;
@@ -401,6 +399,26 @@
 
       .dc-alerts-list__type__level:before {
         background-color: $-color-alert-type-3;
+      }
+    }
+
+    &.dc-alerts-list__type--4 {
+      .el-collapse-item__header {
+        color: $-color-alert-type-4 !important;
+      }
+
+      .dc-alerts-list__type__level:before {
+        background-color: $-color-alert-type-4;
+      }
+    }
+
+    &.dc-alerts-list__type--5 {
+      .el-collapse-item__header {
+        color: $-color-alert-type-5 !important;
+      }
+
+      .dc-alerts-list__type__level:before {
+        background-color: $-color-alert-type-5;
       }
     }
   }

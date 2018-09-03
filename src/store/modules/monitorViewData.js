@@ -4,14 +4,19 @@ export default {
     cid: null,
     bean: 'MonitorView',
     routeName: 'MonitorViewData',
-    data: null
+    data: null,
+    command: null
   },
+
   mutations: {
     monitorViewDataSetCid(state, cid) {
       state.cid = cid;
     },
     monitorViewDataSetData(state, data) {
       state.data = data;
+    },
+    monitorViewDataSetCommand(state, command) {
+      state.command = command;
     }
   },
   actions: {
@@ -20,7 +25,12 @@ export default {
     },
     monitorViewDataSetData: ({commit}, payload) => {
       commit('monitorViewDataSetData', payload.data);
+    },
+    monitorViewDataSetCommand: ({commit}, payload) => {
+      commit('monitorViewDataSetCommand', payload.data);
     }
   },
-  getters: {}
+  getters: {
+    monitorViewDataGetCommand: state => () => state.command
+  }
 };

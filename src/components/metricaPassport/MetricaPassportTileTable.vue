@@ -127,7 +127,7 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+              this.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
           .catch(eventResponse => {
@@ -231,9 +231,9 @@
             let object = {
               selected: selectedObjects.includes(objects[i].id),
               id: objects[i].id,
-              firstAlarm: null !== objects[i].firstAlarm ? formatDate(new Date(objects[i].firstAlarm)) : '',
-              lastAlarm: null !== objects[i].lastAlarm ? formatDate(new Date(objects[i].lastAlarm)) : '',
-              differenceAlarm: null !== objects[i].firstAlarm && null !== objects[i].lastAlarm ? (objects[i].lastAlarm - objects[i].firstAlarm) / 1000 : '',
+              firstAlarm: !funcUtils.isNull(objects[i].firstAlarm) ? formatDate(new Date(objects[i].firstAlarm)) : '',
+              lastAlarm: !funcUtils.isNull(objects[i].lastAlarm) ? formatDate(new Date(objects[i].lastAlarm)) : '',
+              differenceAlarm: !funcUtils.isNull(objects[i].firstAlarm) && !funcUtils.isNull(objects[i].lastAlarm) ? (objects[i].lastAlarm - objects[i].firstAlarm) / 1000 : '',
               object: objects[i]
             };
             res.push(object);

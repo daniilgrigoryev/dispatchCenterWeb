@@ -29,7 +29,7 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   .dc-tag-selectable {
     display: inline-flex;
     align-items: center;

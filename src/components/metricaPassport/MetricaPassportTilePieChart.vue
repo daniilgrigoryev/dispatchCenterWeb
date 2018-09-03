@@ -54,7 +54,8 @@
 </template>
 
 <script>
-  import echarts from 'vue-echarts/components/ECharts'
+  import echarts from 'vue-echarts/components/ECharts';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
 
   export default {
     props: {
@@ -78,23 +79,19 @@
         if (chartData) {
           // based on prepared DOM, initialize echarts instance
           option = {
-            tooltip:
-              {
-                trigger: 'item',
-                formatter: function (params) {
-                  if (params.seriesName === 'Тип') return;
-                }
-              },
-
+            tooltip: {
+              trigger: 'item',
+              formatter: function (params) {
+                if (params.seriesName === 'Тип') return;
+              }
+            },
             series: [
               // "ТИПЫ"
               {
                 name: 'Тип',
                 type: 'pie',
                 radius: ['35%', '55%'],
-
                 selectedMode: false,
-
                 itemStyle: {
                   shadowBlur: 15,
                   emphasis: {
@@ -173,7 +170,6 @@
                     color: 'red'
                   },
                 },
-
                 tooltip: {
                   padding: 10,
                   backgroundColor: 'rgba(44,50,61,0.7)',
@@ -189,15 +185,11 @@
                             </div>`;
                   }
                 },
-
                 itemStyle: {
                   shadowBlur: 25,
                 },
-
-
                 emphasis: {
                   show: true,
-
                 },
                 data: []
               }
@@ -213,16 +205,39 @@
           let levelColors = option.color;
           this.alerts = selectedAlarms.length > 0 ? selectedAlarms.length : alarms.length;
           this.objectsAlert = chartData.selectObj.length > 0 ? chartData.selectObj.length : chartData.objects.length;
+
           // Типы
           for (let m = 0; m < rules.length; m++) {
             let rule = rulesData[rules[m].id];
-            if (undefined === rule) {
+            if (funcUtils.isUndefined(rule)) {
               rulesData[rules[m].id] = {
                 id: rules[m].id,
                 note: rules[m].note,
                 count: 0,
                 alarmLastTime: null
               };
+              switch (rules[m].level) {
+                case 1: {
+                  levelColors.push('#00dbff');
+                  break;
+                }
+                case 2: {
+                  levelColors.push('#8979b2');
+                  break;
+                }
+                case 3: {
+                  levelColors.push('#936152');
+                  break;
+                }
+                case 4: {
+                  levelColors.push('#897213');
+                  break;
+                }
+                case 5: {
+                  levelColors.push('#237e22');
+                  break;
+                }
+              }
             }
           }
           for (let n = 0; n < alarms.length; n++) {
@@ -238,19 +253,11 @@
           let k = 0;
           for (let prop in rulesData) {
             if (rulesData.hasOwnProperty(prop) && rulesData[prop].count > 0) {
-              if (!levelColors.includes('#00dbff') && k === 0) {
-                levelColors.push('#00dbff');
-              } else if (!levelColors.includes('#8979b2') && k === 1) {
-                levelColors.push('#8979b2');
-              } else if (!levelColors.includes('#936152') && k === 2) {
-                levelColors.push('#936152');
-              }
               let rule = rulesData[prop];
               option.series[0].data.push({
                 'value': rule.count,
                 'name': rule.note
               });
-              // option.legend.data.push(rule.note);
             }
             k++;
           }
@@ -259,38 +266,33 @@
             if (selectedAlarms.length > 0 && !selectedAlarms.includes(alarms[i].id)) {
               continue;
             }
-            let name;
+            let name = funcUtils.lookupValue('levelNames', alarms[i].level).label;
             switch (alarms[i].level) {
               case 1: {
-                name = 'Незаметный';
                 if (!levelColors.includes('#3a5b6d')) {
                   levelColors.push('#3a5b6d');
                 }
                 break;
               }
               case 2: {
-                name = 'Низкий';
                 if (!levelColors.includes('#0fac56')) {
                   levelColors.push('#0fac56');
                 }
                 break;
               }
               case 3: {
-                name = 'Нормальный';
                 if (!levelColors.includes('#d89a0f')) {
                   levelColors.push('#d89a0f');
                 }
                 break;
               }
               case 4: {
-                name = 'Высокий';
                 if (!levelColors.includes('#d85803')) {
                   levelColors.push('#d85803');
                 }
                 break;
               }
               case 5: {
-                name = 'Срочный';
                 if (!levelColors.includes('#bc1b0a')) {
                   levelColors.push('#bc1b0a');
                 }

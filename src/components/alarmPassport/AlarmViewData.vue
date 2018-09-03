@@ -107,16 +107,30 @@
           </grid-item>
           <!--/Тайл "Действия с алертом" -->
 
-          <!--Тайл "Редактирование действия" -->
-          <grid-item class="dc-widget-grid__item"
-                     @moved="tileMoveEvent"
+          <!--Тайл "Типы и уровни"-->
+          <grid-item v-show="isGraph"
+                     class="dc-widget-grid__item"
                      :x="gridTilesLayout[3].x"
                      :y="gridTilesLayout[3].y"
                      :w="gridTilesLayout[3].w"
                      :h="gridTilesLayout[3].h"
                      :i="gridTilesLayout[3].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <alert-passport-edit-form :title="gridTilesLayout[3].i"></alert-passport-edit-form>
+            <alarm-passport-tile-line-chart :title="gridTilesLayout[3].i"></alarm-passport-tile-line-chart>
+          </grid-item>
+          <!--Тайл "Типы и уровни"-->
+
+          <!--Тайл "Редактирование действия" -->
+          <grid-item v-show="!isGraph"
+                     class="dc-widget-grid__item"
+                     @moved="tileMoveEvent"
+                     :x="gridTilesLayout[4].x"
+                     :y="gridTilesLayout[4].y"
+                     :w="gridTilesLayout[4].w"
+                     :h="gridTilesLayout[4].h"
+                     :i="gridTilesLayout[4].i"
+                     drag-allow-from=".dc-widget-grid__item__header">
+            <alert-passport-edit-form :title="gridTilesLayout[4].i"></alert-passport-edit-form>
           </grid-item>
           <!--/Тайл "Редактирование действия" -->
         </grid-layout>
@@ -131,11 +145,13 @@
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
-  import PageAside from "../PageAside";
-  import AlertPassportTileDescription from "./AlertPassportTileDescription"
-  import AlertPassportTileSelectData from "./AlertPassportTileSelectData"
-  import AlertPassportTileActions from "./AlertPassportTileActions"
-  import AlertPassportEditForm from "./AlertPassportEditForm"
+  import PageAside from "../SharedWidgets/PageAside";
+  import AlertPassportTileDescription from "./AlertPassportTileDescription";
+  import AlertPassportTileSelectData from "./AlertPassportTileSelectData";
+  import AlertPassportTileActions from "./AlertPassportTileActions";
+  import AlertPassportEditForm from "./AlertPassportEditForm";
+  import AlarmPassportTileLineChart from "./AlarmPassportTileLineChart";
+  import {bus} from "../../assets/js/utils/bus";
 
   export default {
     name: "AlarmViewData",
@@ -146,7 +162,8 @@
       AlertPassportTileDescription,
       AlertPassportTileSelectData,
       AlertPassportTileActions,
-      AlertPassportEditForm
+      AlertPassportEditForm,
+      AlarmPassportTileLineChart
     },
     data() {
       return {
@@ -155,11 +172,12 @@
           {i: 'Описание и время', x: 0, y: 0, w: 7, h: 35},
           {i: 'Показать данные', x: 0, y: 35, w: 7, h: 30},
           {i: 'Действия с алертом', x: 7, y: 0, w: 6, h: 65},
-          {i: 'Редактирование действия', x: 13, y: 0, w: 11, h: 65},
-
+          {i: 'График показателей', x: 13, y: 0, w: 11, h: 4},
+          {i: 'Редактирование действия', x: 13, y: 0, w: 11, h: 65}
         ],
         isMainMenuCollapsed: true,
-        headerSwitch: false
+        headerSwitch: false,
+        isGraph: true
       };
     },
     computed: {
@@ -183,14 +201,37 @@
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
           if (eventResponse.status === 200) {
-            this.$store.dispatch('fillModule', {'selfStore': this.$store, 'event': eventResponse});
+            this.$store.dispatch('fillModule', {'event': eventResponse});
           }
         })
         .catch(eventResponse => {
           alert(eventResponse.message);
         });
     },
+    mounted: function () {
+      let vm = this;
+      this.$store.watch(this.$store.getters.alarmViewDataGetCommand, state => {
+        vm.updateOnCommand(state);
+      });
+      bus.$on('setGraphVisible', function (payLoad) {
+        vm.isGraph = payLoad;
+      });
+    },
     methods: {
+      updateOnCommand: function (resp) {
+        let wid = sessionStorage.getItem('wid');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.alarmViewData.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, null);
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
       getPrev: function () {
         funcUtils.getPrevComponent(() => {
           funcUtils.getPrevPage(this.$router, this.$store.state.monitorViewData.routeName);

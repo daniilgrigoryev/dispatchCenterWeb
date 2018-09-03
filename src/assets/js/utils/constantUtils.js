@@ -57,3 +57,26 @@ export const statusNames=[
     value: 2
   }
 ];
+
+export const stateActions=[
+  {
+    label: 'Запланировано',
+    value: 1
+  },
+  {
+    label: 'Выполняется',
+    value: 2
+  },
+  {
+    label: 'Исполнено',
+    value: 3
+  },
+  {
+    label: 'Прервано',
+    value: 4
+  },
+  {
+    label: 'Ждет',
+    value: 5
+  }
+];

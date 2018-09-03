@@ -79,7 +79,7 @@
             <div class="dc-alert-passport__time-title">время возникновения</div>
             <div class="dc-alert-passport__time-values">
               <div class="dc-alert-passport__time-values__title">{{alertData.alarmTime | formatRelativeDate()}}</div>
-              <div class="dc-alert-passport__time-values__value">{{alertData.alarmTime | formatDateTime('hh:mm')}}</div>
+              <div class="dc-alert-passport__time-values__value">{{alertData.alarmTime | formatDateTime('HH:mm')}}</div>
             </div>
           </div>
         </div>
@@ -123,9 +123,7 @@
       }
     },
     data() {
-      return {
-
-      };
+      return {};
     },
     computed: {
       alertData: function () {
@@ -157,56 +155,53 @@
         let res = {};
         let data = this.$store.state.alarmViewData.data;
         if (data) {
-          data.alarmLastTime = '';
-          data.levelName = {};
+          res.alarmLastTime = '';
+          res.levelName = {};
+          res.note = data.note;
+          res.alarmTime = data.alarmTime;
+          res.alarmRuleNote = data.alarmRuleNote;
+          res.objectName = data.objectName;
+          res.objectNote = data.objectNote;
           let actions = data.actions;
           if (data.state === 3) {
-            if (actions !== undefined && actions !== null) {
+            if (funcUtils.isNotEmpty(actions)) {
               let max = actions.reduce((max, action) => action.lastOperTime < max ? action.lastOperTime : max, actions[0].lastOperTime);
-              data.alarmLastTime = max | formatDateTime('DD.MM.YYYY hh:mm');
+              res.alarmLastTime = max | formatDateTime('DD.MM.YYYY HH:mm');
             }
           } else {
-            data.alarmLastTime = funcUtils.lookupValue('stateNames', data.state).label;
+            res.alarmLastTime = funcUtils.lookupValue('stateNames', data.state).label;
           }
 
-          if (data.level !== undefined && data.level !== null) {
+          if (funcUtils.isNotEmpty(data.level)) {
+            res.levelName = funcUtils.lookupValue('levelNames', data.level).label;
             switch (data.level) {
               case 1: {
-                data.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-low';
-                data.levelName = 'Незаметный';
+                res.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-low';
                 break;
               }
               case 2: {
-                data.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-normal';
-                data.levelName = 'Низкий';
+                res.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-normal';
                 break;
               }
               case 3: {
-                data.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-moderate';
-                data.levelName = 'Нормальный';
+                res.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-moderate';
                 break;
               }
               case 4: {
-                data.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-high';
-                data.levelName = 'Высокий';
+                res.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-high';
                 break;
               }
               case 5: {
-                data.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-immediate';
-                data.levelName = 'Срочный';
+                res.dcAlertPlateLevel = 'dc-alert-passport-status-box--level-immediate';
                 break;
               }
             }
           }
-
-          res = data;
         }
         return res;
       }
     },
-    methods: {
-
-    }
+    methods: {}
   }
 </script>
 

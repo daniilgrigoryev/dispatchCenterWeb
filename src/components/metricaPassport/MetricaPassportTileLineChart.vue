@@ -44,7 +44,8 @@
 </template>
 
 <script>
-  import echarts from 'vue-echarts/components/ECharts'
+  import echarts from 'vue-echarts/components/ECharts';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
 
   export default {
     components: {echarts},
@@ -60,22 +61,6 @@
     },
     computed: {
       lineChart: function () {
-        let sortNumber = function (a, b) {
-          return a[Object.keys(a)[0]] - b[Object.keys(b)[0]];
-        };
-        let sortDate = function (a, b) {
-          let date1 = a[Object.keys(a)[0]];
-          let date2 = b[Object.keys(b)[0]];
-          let day1 = date1.substring(0, date1.indexOf('.'));
-          let day2 = date2.substring(0, date2.indexOf('.'));
-          let month1 = date1.substring(date1.indexOf('.') + 1, date1.lastIndexOf('.'));
-          let month2 = date2.substring(date2.indexOf('.') + 1, date2.lastIndexOf('.'));
-          let year1 = date1.substring(date1.lastIndexOf('.') + 1, date1.length);
-          let year2 = date2.substring(date2.lastIndexOf('.') + 1, date2.length);
-          let parsedDate1 = new Date(year1, month1 - 1, day1, '00', '00', '00');
-          let parsedDate2 = new Date(year2, month2 - 1, day2, '00', '00', '00');
-          return parsedDate1.getTime() - parsedDate2.getTime();
-        };
         let formatDate = function (date) {
           let now = date;
           let year = "" + now.getFullYear();
@@ -153,8 +138,7 @@
               },
               splitLine: {
                 show: false
-              },
-
+              }
             },
             valueAxis: {
               splitLine: {
@@ -230,9 +214,6 @@
             type: 'time',
             boundaryGap: false,
             maxInterval: 3600 * 1000 * 24 * 10,
-            splitLine: {
-              show: false
-            },
             axisLabel: {
               formatter: (data) => {
                 return formatDate(new Date(data));
@@ -267,7 +248,7 @@
                   return a.d - b.d;
                 });
                 value.min = value.items[0].d;
-                if (graphVal.min > value.min || graphVal.min === null) {
+                if (graphVal.min > value.min || funcUtils.isNull(graphVal.min)) {
                   graphVal.min = value.min;
                 }
                 graphVal.values.push(value);

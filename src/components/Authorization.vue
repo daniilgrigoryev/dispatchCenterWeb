@@ -51,8 +51,9 @@
                   let dataJson = JSON.parse(data);
                   let respData = dataJson.data;
                   let respError = dataJson.error;
-                  if (null !== respData) {
+                  if (!funcUtils.isNull(respData)) {
                     if (dataJson.method === 'login') {
+                      funcUtils.clearAll();
                       localStorage.setItem('auth', 'true');
                       localStorage.setItem('sid', respData.sid);
                       if (funcUtils.isNull(sessionStorage.getItem(wid))) {

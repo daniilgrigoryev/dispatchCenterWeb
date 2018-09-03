@@ -39,6 +39,7 @@
 <script>
   import echarts from 'vue-echarts/components/ECharts'
   import 'echarts/lib/chart/bar'
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
 
   export default {
     name: "metrica-passport-tile-sticks",
@@ -206,8 +207,13 @@
           };
           let timeRadioToggle = parseInt(this.timeRadioToggle);
           let alarms = data.alarms;
+          let rules = data.alarmRules;
           let selectedAlarms = data.selectAlarms;
           let alarmsData = {};
+          let rulesObj = {};
+          rules.forEach((rule) => {
+            rulesObj[rule.id] = rule;
+          });
           alarms.sort((a,b) => {
             return a.alarmTime - b.alarmTime;
           });
@@ -215,46 +221,45 @@
             if (selectedAlarms.length > 0 && !selectedAlarms.includes(alarms[i].id)) {
               continue;
             }
+            let rule = rulesObj[alarms[i].alarmRuleId];
+            let uniqueKey = rule.id + rule.note + alarms[i].level;
             let formattedDate = formatDate(new Date(alarms[i].alarmTime), timeRadioToggle);
-            let alarm = alarmsData[alarms[i].level];
+            let alarm = alarmsData[uniqueKey];
             if (!alarm) {
               alarm = {
                 type: 'bar',
                 stack: 'dc-sticks',
+                level: alarms[i].level,
                 data: {}
               };
-              alarmsData[alarms[i].level] = alarm;
+              alarmsData[uniqueKey] = alarm;
+              alarm.name = funcUtils.lookupValue('levelNames', alarms[i].level).label;
               switch (alarms[i].level) {
                 case 1: {
-                  alarm.name = 'Незаметный';
                   if (!option.color.includes('#3a5b6d')) {
                     option.color.push('#3a5b6d');
                   }
                   break;
                 }
                 case 2: {
-                  alarm.name = 'Низкий';
                   if (!option.color.includes('#0fac56')) {
                     option.color.push('#0fac56');
                   }
                   break;
                 }
                 case 3: {
-                  alarm.name = 'Нормальный';
                   if (!option.color.includes('#d89a0f')) {
                     option.color.push('#d89a0f');
                   }
                   break;
                 }
                 case 4: {
-                  alarm.name = 'Высокий';
                   if (!option.color.includes('#d85803')) {
                     option.color.push('#d85803');
                   }
                   break;
                 }
                 case 5: {
-                  alarm.name = 'Срочный';
                   if (!option.color.includes('#bc1b0a')) {
                     option.color.push('#bc1b0a');
                   }

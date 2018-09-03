@@ -13,7 +13,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
-    cid: null,
+
     modulesNames: ['monitorReestr', 'monitorEdit', 'alarmRuleReestr', 'alarmRuleEdit', 'monitorDict', 'monitorViewData', 'alarmViewData']
   },
   mutations: {},
@@ -22,9 +22,6 @@ const store = new Vuex.Store({
       let event = payload.event;
       let data = event.data || event.response;
       if (data.length > 0) {
-        let selfStore = payload.selfStore.state === undefined ?
-          payload.selfStore[Object.keys(payload.selfStore)[0]] :
-          payload.selfStore;
         let dataJson = JSON.parse(data);
         if (dataJson.method === 'ping') {
           let selfStorePing = payload.selfStore.$root;
@@ -36,21 +33,30 @@ const store = new Vuex.Store({
         }
         let respData = dataJson.data;
         let respError = dataJson.error;
-        if (null !== respData) {
-          let props = selfStore.state || selfStore[Object.keys(selfStore)[0]].state;
+        if (!funcUtils.isNull(respData)) {
+          let props = this.state;
           for (let prop in props) {
             if (props.hasOwnProperty(prop)) {
               let propObj = props[prop];
-              if (propObj && null !== propObj && (propObj.hasOwnProperty('cid') || propObj.hasOwnProperty('bean'))) {
+              if (propObj && !funcUtils.isNull(propObj) && (propObj.hasOwnProperty('cid') || propObj.hasOwnProperty('bean'))) {
                 let moduleObj = props[prop];
-                if ((null !== dataJson.cid && (moduleObj.cid === dataJson.cid)) || (null !== dataJson.bean) && (moduleObj.bean === dataJson.bean)) {
-                  let actionName = moduleObj['moduleName'] + 'SetData';
-                  dispatch(actionName, {'data': respData});
+                if ((!funcUtils.isNull(dataJson.cid) && (moduleObj.cid === dataJson.cid)) || !funcUtils.isNull(dataJson.bean) && (moduleObj.bean === dataJson.bean)) {
+                  let actionName = moduleObj['moduleName'];
+                  let command = respData.command;
+                  let res;
+                  if (funcUtils.isNotEmpty(command)) {
+                    res = dataJson;
+                    actionName += 'SetCommand';
+                  } else {
+                    res = respData;
+                    actionName += 'SetData';
+                  }
+                  dispatch(actionName, {'data': res});
                 }
               }
             }
           }
-        } else if (null !== respError) {
+        } else if (!funcUtils.isNull(respError)) {
           alert(respError.errorMsg);
         }
       }

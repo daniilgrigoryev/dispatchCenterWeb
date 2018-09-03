@@ -26,17 +26,12 @@ let vue = new Vue({
   data: {},
   render: h => h(App),
   beforeCreate: function () {
-    history.pushState(null, null, window.location.href);
-    window.onpopstate = function () {
-      history.go(1);
-    };
     if (funcUtils.isNull(sessionStorage.getItem('wid'))) {
       sessionStorage.setItem('wid', guid());
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
       funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
     }
     funcUtils.addToLocalStorage('lastActive', new Date().getTime());
-
     if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
       let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'addWID'), null);
       RequstApi.sendSocketRequest(temp, this);
@@ -44,6 +39,10 @@ let vue = new Vue({
   },
   mounted: function () {
     this.activateTimer();
+    history.pushState(null, null, window.location.href);
+    window.onpopstate = function () {
+      history.go(1);
+    };
   },
   methods: {
     logout: function () {
@@ -51,30 +50,24 @@ let vue = new Vue({
       let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), sessionStorage.getItem('wid'), null, null, 'logout');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam);
-      localStorage.removeItem('auth');
-      localStorage.removeItem('sid');
-      localStorage.removeItem('lastActive');
-      localStorage.removeItem('alarmRuleReestr');
-      localStorage.removeItem('monitorReestr');
-      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+      funcUtils.clearAll();
       this.$router.push('/');
     },
-    getMonitorReestr: function () {
+    clearToStart: function () {
       funcUtils.removeAllComponents();
       sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
       funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+    },
+    getMonitorReestr: function () {
+      this.clearToStart();
       funcUtils.getNextPage(this.$router, this.$store.state.monitorReestr.routeName);
     },
     getAlarmRuleReestr: function () {
-      funcUtils.removeAllComponents();
-      sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
-      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+      this.clearToStart();
       funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleReestr.routeName);
     },
     getMonitorDict: function () {
-      funcUtils.removeAllComponents();
-      sessionStorage.setItem((sessionStorage.getItem('wid')), '[]');
-      funcUtils.addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+      this.clearToStart();
       funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
     },
     activateTimer: function () {
