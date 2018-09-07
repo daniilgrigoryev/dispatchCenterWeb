@@ -1,5 +1,5 @@
 <template>
-  <div class="dc-alerts-wrapper" style="height: 100%;">
+  <div>
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
@@ -14,6 +14,7 @@
         </div>
 
         <div class="dc-widget-grid__item__header__buttons">
+
           <el-tooltip class="item" effect="dark" content="Раскрыть на весь экран" placement="bottom">
             <el-button size="mini" class="dc-button-icon-small">
               <img src="../../assets/img/icon-zoomin-small-white.svg" alt="">
@@ -29,91 +30,90 @@
       </div>
     </div>
     <!--/Хедер тайла-->
-
-    <!-- Список уровней алертов по типам -->
-    <div style="display: flex; align-items: center;">
-      <transition name="fadeToLeft">
-        <ul v-show="activeAlertsListSize === null" id="dc_alerts_list" class="dc-alerts-list" style="height: 385px; width: 100%;">
-          <li v-for="(item, index) in alertsList"
-              :key="item.uniqueKey"
-              :row-key="index + 1"
-              :class="'dc-alerts-list__type ' + item.dcAlertsListType"
-              :title="item.name">
-            <!--Алерты – немедленный уровень-->
-            <div :class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
-                 @click="setActiveAlertItem(index, item)">
-              <div>
-                <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
-                <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
-              </div>
-              <div style="margin-left: auto; display: flex; align-items: center;">
-                <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
-                <el-button type="text" icon="el-icon-arrow-right"
-                           class="dc-alerts-list__type__level__toggler"></el-button>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </transition>
-
-      <transition name="fadeToRight">
-        <div :style="{visibility: activeAlertsListSize > 0 ? 'visible' : 'hidden'}"> <!--  :class="'dc-alerts-list__type ' + alertsList[activeAlertListItem].dcAlertsListType" -->
-          <div v-if="activeAlertsListSize !== null" :class="'dc-alerts-list__type__level ' + alertsList[activeAlertListItem].dcAlertsListTypeLevel"
-               @click="activeAlertListItem = 0; activeAlertsListSize = null"
-               style="position: absolute; width: 100%; top: 32px;">
-            <div>
-              <div class="dc-alerts-list__type__level__heading">{{alertsList[activeAlertListItem].name}}</div>
-              <div class="dc-alerts-list__type__level__subheading">{{alertsList[activeAlertListItem].levelName}}</div>
-            </div>
-            <div style="margin-left: auto; display: flex; align-items: center;">
-              <div class="dc-alerts-list__type__level__value">{{alertsList[activeAlertListItem].count}}</div>
-              <el-button type="text" icon="el-icon-arrow-down" class="dc-alerts-list__type__level__toggler"></el-button>
-            </div>
-          </div>
-          <div id="alertsList" style="height: 335px; overflow-y: auto; position: absolute; top: 76px; width: 100%;">
-            <ul v-if="activeAlertsListSize !== null">
-              <li class="dc-alerts-list-item"
-                  :style="{background: alarm.selected ? '#b5aeb5 !important' : 'transparent'}"
-                  v-for="(alarm, indexInner) in alertsList[activeAlertListItem].alarms"
-                  :title="alarm.note">
-                <div class='flex-parent'>
-                  <div class="flex-child flex-parent flex-parent--center-cross mr24">
-                    <label>
-                      <input v-model="alarm.selected" :disabled="!alarm.selected && selectedAlarms.length >= 3"
-                             @click="setActiveAlarm(alarm)" type="checkbox"/>
-                    </label>
+    <el-collapse v-if="alertsList.length > 0" v-model="activeName" accordion @change="handleClickAccordian">
+      <el-collapse-item v-for="(monitor, indexMonitor) in alertsList"
+                        :title="monitor.name"
+                        :name="indexMonitor">
+        <div style="display: flex; align-items: stretch;">
+          <transition name="fadeToLeft">
+            <ul v-show="activeAlertsListSize === null" id="dc_alerts_list" class="dc-alerts-list" style="width: 100%;">
+              <li v-for="(item, index) in monitor.rules"
+                  :key="item.uniqueKey"
+                  :row-key="index + 1"
+                  :class="'dc-alerts-list__type ' + item.dcAlertsListType"
+                  :title="item.name">
+                <!--Алерты – немедленный уровень-->
+                <div :class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
+                     @click="setActiveAlertItem(index, item)">
+                  <div>
+                    <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
+                    <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
                   </div>
-                  <div class='flex-child'>
-                    <div @click="getAlarmPassport(alarm.id)" class="dc-alerts-list-item__name">
-                      <span>алерт</span> ID {{alarm.id}}
-                    </div>
-                    <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
-                  </div>
-                  <div class='flex-child' style="margin-left: auto;">
-                    <div class="dc-alerts-list-item__date">{{alarm.alarmTime | formatDateTime('DD.MM.YYYY')}}</div>
-                    <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('HH:mm')}}</div>
+                  <div style="margin-left: auto; display: flex; align-items: center;">
+                    <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
+                    <el-button type="text" icon="el-icon-arrow-right"
+                               class="dc-alerts-list__type__level__toggler"></el-button>
                   </div>
                 </div>
               </li>
             </ul>
-          </div>
+          </transition>
+
+          <transition name="fadeToRight">
+            <div :style="{visibility: activeAlertsListSize > 0 ? 'visible' : 'hidden', height: '380px'}"><!-- :class="'dc-alerts-list__type ' + alertsList[activeMonitor].rules[activeAlertListItem].dcAlertsListType"-->
+              <div v-if="activeAlertsListSize !== null" :class="'dc-alerts-list__type__level ' + alertsList[activeMonitor].rules[activeAlertListItem].dcAlertsListTypeLevel"
+                    @click="activeAlertListItem = 0; activeAlertsListSize = null"
+                    style="width: 100%; position: absolute; top: 38px;">
+                <div>
+                  <div class="dc-alerts-list__type__level__heading">{{alertsList[activeMonitor].rules[activeAlertListItem].name}}</div>
+                  <div class="dc-alerts-list__type__level__subheading">{{alertsList[activeMonitor].rules[activeAlertListItem].levelName}}</div>
+                </div>
+                <div style="margin-left: auto; display: flex; align-items: center;">
+                  <div class="dc-alerts-list__type__level__value">{{alertsList[activeMonitor].rules[activeAlertListItem].count}}</div>
+                  <el-button type="text" icon="el-icon-arrow-down" class="dc-alerts-list__type__level__toggler"></el-button>
+                </div>
+              </div>
+              <div id="alertsList" style="height: 335px; overflow-y: auto; width: 100%; position: absolute; top: 83px;">
+                <ul v-if="activeAlertsListSize !== null">
+                  <li class="dc-alerts-list-item"
+                      v-for="(alarm, indexInner) in alertsList[activeMonitor].rules[activeAlertListItem].alarms"
+                      :title="alarm.note">
+                    <div class='flex-parent'>
+                      <div class="flex-child flex-parent flex-parent--center-cross mr24">
+                        <label>
+                          <input v-model="alarm.selected" :disabled="!alarm.selected && selectedAlarms.length >= 3"
+                                 @click="setActiveAlarm(alarm)" type="checkbox"/>
+                        </label>
+                      </div>
+                      <div class='flex-child'>
+                        <div @click="getAlarmPassport(alarm.id)" class="dc-alerts-list-item__name">
+                          <span>алерт</span> ID {{alarm.id}}
+                        </div>
+                        <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
+                      </div>
+                      <div class='flex-child' style="margin-left: auto;">
+                        <div class="dc-alerts-list-item__date">{{alarm.alarmTime | formatDateTime('DD.MM.YYYY')}}</div>
+                        <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('HH:mm')}}</div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </transition>
         </div>
-      </transition>
-    </div>
-     <!--/Алерты – немедленный уровень-->
-    <div v-if="alertsList.length <= 0" class="data-empty">data empty😂</div>
-    <!--/Список уровней алертов (по типам)-->
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 
 <script>
-  import * as RequestEntity from '../../assets/js/api/requestEntity';
-  import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import { bus } from "../../assets/js/utils/bus";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
 
   export default {
-    name: "metrica-pie-chart-alerts-list",
     props: {
       title: {
         type: String
@@ -128,6 +128,8 @@
     data() {
       return {
         selectedAlarms: [],
+        activeName: '0',
+        activeMonitor: 0,
         activeAlertListItem: 0,
         activeAlertsListSize: null,
         scrollCount: 40
@@ -135,23 +137,34 @@
     },
     computed: {
       alertsList: function () {
-        let res = [{}];
-        let data = this.$store.state.monitorViewData.data;
+        let res = [];
+        let data = this.$store.state.objectViewData.data;
         if (data) {
-          let rules = data.alarmRules;
-          let alarms = data.alarms;
           let selectedAlarms = data.selectAlarms;
           this.selectedAlarms = selectedAlarms;
-          if (data.selectObj.length > 0) {
-            this.activeAlertListItem = 0;
-          }
+          let rules = data.alarmRules;
+          let alarms = data.alarms;
+          let monitors = data.monitors;
           let rulesData = {};
+          let monitorsData = {};
           let rulesList = [];
           let rulesObj = {};
+          let vm = this;
+          /*alarms.sort((a,b) => {
+            return a.alarmTime - b.alarmTime;
+          });*/
           rules.forEach((rule) => {
             rulesObj[rule.id] = rule;
           });
-          let vm = this;
+          monitors.forEach((monitor) => {
+            monitorsData[monitor.id + 'monitor'] = {
+              id: monitor.id,
+              name: monitor.name,
+              note: monitor.note,
+              monitor: monitor,
+              rules: []
+            };
+          });
           alarms.forEach((alarm) => {
             let rule = rulesObj[alarm.alarmRuleId];
             let uniqueKey = rule.id + rule.note + alarm.level;
@@ -160,6 +173,7 @@
               ruleData = {
                 id: rule.id,
                 name: rule.note,
+                sourceId: rule.sourceId,
                 count: 0,
                 level: rule.level,
                 alarmLastTime: null,
@@ -215,7 +229,6 @@
               rulesData[uniqueKey] = ruleData;
             }
             ruleData.count++;
-            alarm.selected = false;
             if (vm.scrollCount < 40) {
               vm.scrollCount = 40;
             }
@@ -232,7 +245,14 @@
           });
           for (let prop in rulesData) {
             if (rulesData.hasOwnProperty(prop) && rulesData[prop].count > 0) {
-              rulesList.push(rulesData[prop]);
+              let rule = rulesData[prop];
+              monitorsData[rule.sourceId + 'monitor'].rules.push(rule);
+            }
+          }
+          for (let prop in monitorsData) {
+            if (monitorsData.hasOwnProperty(prop)) {
+              let monitor = monitorsData[prop];
+              rulesList.push(monitor);
             }
           }
           res = rulesList;
@@ -247,6 +267,22 @@
           this.scrollCount += 40;
         }
       },
+      handleClickAccordian(activeIndex) {
+        this.activeAlertListItem = 0;
+        this.activeAlertsListSize = null;
+        this.activeMonitor = +activeIndex;
+        let monitor = null;
+        let clicked = false;
+        if (activeIndex !== '') {
+          monitor = this.alertsList[this.activeMonitor].monitor;
+          clicked = true;
+        }
+        bus.$emit('refresh');
+        bus.$emit('setActiveMonitor', {
+          monitor: monitor,
+          clicked: clicked
+        });
+      },
       setActiveAlertItem(index, item) {
         this.activeAlertsListSize = item.alarms.length;
         if (index + 1 === this.activeAlertListItem) {
@@ -259,7 +295,6 @@
         this.scrollCount = 40;
       },
       setActiveAlarm: function (alarm) {
-        bus.$emit('resetScroll', true);
         let vm = this;
         if (alarm.selected) {
           alarm.selected = false;
@@ -279,7 +314,7 @@
           let wid = sessionStorage.getItem('wid');
           let componentsRoute = funcUtils.getFromSessionStorage(wid);
           let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, vm.$store.state.monitorViewData.bean, 'selectAlarms');
+          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, vm.$store.state.objectViewData.bean, 'selectAlarms');
           let requestParam = new RequestEntity.RequestParam(requestHead, {ids: vm.selectedAlarms});
           RequstApi.sendHttpRequest(requestParam)
             .then(eventResponse => {
@@ -293,14 +328,14 @@
         }
       },
       getAlarmPassport: function (alarmId) {
-        let monitorViewData = this.$store.state.monitorViewData.data;
+        let objectViewData = this.$store.state.objectViewData.data;
         let params = {
           'beanName': 'monitorViewData',
           'alarmId': alarmId,
-          'dateBeg': monitorViewData.dateBeg,
-          'dateEnd': monitorViewData.dateEnd
+          'dateBeg': objectViewData.dateBeg,
+          'dateEnd': objectViewData.dateEnd
         };
-        if (funcUtils.isNull(monitorViewData.dateBeg)) {
+        if (funcUtils.isNull(objectViewData.dateBeg)) {
           alert("Начальный период необходимо заполнить!");
           return;
         }
@@ -325,6 +360,10 @@
   $-color-alert-type-4: #897213;
   $-color-alert-type-5: #237e22;
 
+  .el-collapse-item {
+    position: relative;
+  }
+
   .fadeToLeft-enter-active, .fadeToLeft-leave-active {
     transition: all 300ms ease-in-out;
     transform: translateX(0px);
@@ -332,7 +371,7 @@
   }
   .fadeToLeft-enter, .fadeToLeft-leave-to /* .fadeToLeft-leave-active below version 2.1.8 */ {
     transition: all 300ms ease-in-out;
-    transform: translateX(-719px);
+    transform: translateX(-616px);
     opacity: 0;
   }
 
@@ -343,7 +382,7 @@
   }
   .fadeToRight-enter, .fadeToRight-leave-to /* .fadeToRight-leave-active below version 2.1.8 */ {
     transition: all 300ms ease-in-out;
-    transform: translateX(719px);
+    transform: translateX(616px);
     opacity: 0;
   }
 

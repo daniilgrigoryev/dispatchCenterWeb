@@ -35,6 +35,7 @@
     <!--/Линейная диаграмма-->
     <echarts
       style="width: 100%"
+      ref="metricaPassportLineChart"
       :options="lineChart"
       auto-resize
     >
@@ -46,6 +47,7 @@
 <script>
   import echarts from 'vue-echarts/components/ECharts';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
+  import {bus} from "../../assets/js/utils/bus";
 
   export default {
     components: {echarts},
@@ -199,7 +201,16 @@
               width: '80%',
               containLabel: true
             },
-            xAxis: null,
+            xAxis: {
+              type: 'time',
+              boundaryGap: false,
+              maxInterval: 3600 * 1000 * 24 * 10,
+              axisLabel: {
+                formatter: (data) => {
+                  return formatDate(new Date(data));
+                },
+              },
+            },
             yAxis: {
               type: 'value',
               boundaryGap: false,
@@ -207,29 +218,22 @@
                 show: false
               }
             },
-            series: null
-          };
-          let series = [];
-          let xAxis = {
-            type: 'time',
-            boundaryGap: false,
-            maxInterval: 3600 * 1000 * 24 * 10,
-            axisLabel: {
-              formatter: (data) => {
-                return formatDate(new Date(data));
-              },
-            },
+            series: []
           };
           let grafic = data.graph;
           let chartDataSize = 0;
           let sortableGraph = [];
+          let selectedAlarms = data.alarms.filter(item => {
+            return data.selectAlarms.includes(item.id);
+          });
           for (let prop in grafic) {
             if (grafic.hasOwnProperty(prop)) {
               let graphVal = {
                 id: +prop,
                 graphName: '',
                 values: [],
-                min: null
+                min: null,
+                max: null
               };
               if (graphVal.id !== 0) {
                 data.objects.forEach((obj) => {
@@ -244,6 +248,10 @@
                   name: item[0],
                   items: item[1]
                 };
+                value.max = value.items.sort((a, b) => b.v - a.v)[0].v;
+                if (graphVal.max < value.max || funcUtils.isNull(graphVal.max)) {
+                  graphVal.max = value.max;
+                }
                 value.items.sort((a,b) => {
                   return a.d - b.d;
                 });
@@ -276,16 +284,45 @@
                 },
                 symbol: 'roundRect'
               };
+              if (funcUtils.isNotEmpty(selectedAlarms) && selectedAlarms.length > 0) {
+                selectedAlarms.forEach((alarm) => {
+                  option.series.push({
+                    name: alarm.id,
+                    type: 'scatter',
+                    xAxisIndex: 0,
+                    yAxisIndex: 0,
+                    data: [],
+                    markLine: {
+                      animation: false,
+                      lineStyle: {
+                        normal: {
+                          type: 'solid',
+                          color: '#FFF',
+                          width: 7,
+                        }
+                      },
+                      tooltip: {
+                        show: false
+                      },
+                      data: [[{
+                        coord: [alarm.alarmTime, itemVal.max],
+                        symbol: 'none'
+                      }, {
+                        coord: [alarm.alarmTime, 0],
+                        symbol: 'none'
+                      }]]
+                    }
+                  });
+                });
+              }
               itemVal.items.forEach((val) => {
                 serie.data.push([new Date(val.d), val.v]);
               });
               chartDataSize += 1;
-              series.push(serie);
+              option.series.push(serie);
             });
           });
           this.chartDataSize = chartDataSize;
-          option.xAxis = xAxis;
-          option.series = series;
         }
         return option;
       }

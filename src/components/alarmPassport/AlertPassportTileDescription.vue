@@ -111,8 +111,6 @@
 </template>
 
 <script>
-  import * as RequestEntity from '../../assets/js/api/requestEntity';
-  import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
 
   export default {
@@ -127,31 +125,6 @@
     },
     computed: {
       alertData: function () {
-        let formatDate = function (date) {
-          let now = date;
-          let year = "" + now.getFullYear();
-          let month = "" + (now.getMonth() + 1);
-          if (month.length === 1) {
-            month = "0" + month;
-          }
-          let day = "" + now.getDate();
-          if (day.length === 1) {
-            day = "0" + day;
-          }
-          let hour = "" + now.getHours();
-          if (hour.length === 1) {
-            hour = "0" + hour;
-          }
-          let minute = "" + now.getMinutes();
-          if (minute.length === 1) {
-            minute = "0" + minute;
-          }
-          let second = "" + now.getSeconds();
-          if (second.length === 1) {
-            second = "0" + second;
-          }
-          return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
-        };
         let res = {};
         let data = this.$store.state.alarmViewData.data;
         if (data) {
@@ -166,7 +139,7 @@
           if (data.state === 3) {
             if (funcUtils.isNotEmpty(actions)) {
               let max = actions.reduce((max, action) => action.lastOperTime < max ? action.lastOperTime : max, actions[0].lastOperTime);
-              res.alarmLastTime = max | formatDateTime('DD.MM.YYYY HH:mm');
+              res.alarmLastTime = funcUtils.formatDateTime(max, 'DD.MM.YYYY HH:mm');
             }
           } else {
             res.alarmLastTime = funcUtils.lookupValue('stateNames', data.state).label;

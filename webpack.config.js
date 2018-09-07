@@ -51,7 +51,7 @@ module.exports = (options = {}) => ({
         use: [{
           loader: 'url-loader',
           options: {
-            limit: 1024
+            limit: 64
           }
         }]
       }

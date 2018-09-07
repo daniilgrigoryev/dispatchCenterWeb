@@ -2,6 +2,7 @@ import * as RequestEntity from './../api/requestEntity';
 import {RequstApi} from './../api/requestApi';
 import * as ConstantUtils from './../utils/constantUtils';
 import $ from "jquery";
+import moment from 'moment';
 
 export function guid() {
   function s4() {
@@ -269,4 +270,8 @@ export function clearAll() {
   localStorage.removeItem('alarmRuleReestr');
   localStorage.removeItem('monitorReestr');
   addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
+}
+
+export function formatDateTime(dateTime, format) {
+  return moment(dateTime).format(format);
 }

@@ -37,39 +37,40 @@
     <!--/Хедер тайла-->
 
     <!--Таблица объектов метрики-->
-    <div style="overflow-y: auto; overflow-x: hidden; height: 375px;">
-      <float-thead-table :scrollContainer="scrollContainer" autoReflow :top="36" class="dc-widget-grid__item__table-list">
+    <div id="floatTheadWrapper" style="overflow-y: auto; overflow-x: hidden; height: 375px;">
+      <float-thead-table :scrollContainer="scrollContainer" autoReflow :top="36"
+                         class="dc-widget-grid__item__table-list">
         <thead>
-          <tr>
-            <th style="width: 55px;">
-              <label for="allChecked">
-                <input id="allChecked" v-model="allChecked" :disabled="objectsLength > 4 && !allChecked"
-                       v-on:click="selectAllCheckBox" type="checkbox"/>
-              </label>
-            </th>
-            <th>Имя</th>
-            <th>Описание</th>
-            <th>Алертов</th>
-            <th style="width: 150px">Первый</th>
-            <th style="width: 150px">Последний</th>
-            <th style="width: 150px">Прошло</th>
-          </tr>
+        <tr>
+          <th style="width: 55px;">
+            <label for="allChecked">
+              <input id="allChecked" v-model="allChecked" :disabled="objectsLength > 4 && !allChecked || objectsLength === 0"
+                     v-on:click="selectAllCheckBox" type="checkbox"/>
+            </label>
+          </th>
+          <th>Имя</th>
+          <th>Описание</th>
+          <th>Алертов</th>
+          <th style="width: 150px">Первый</th>
+          <th style="width: 150px">Последний</th>
+          <th style="width: 150px">Прошло</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in tableMetricaObjects">
-            <td style="width: 55px;">
-              <label>
-                <input v-model="item.selected" :disabled="!item.selected && selectedObjects.length >= 3"
-                       v-on:click="selectCheckBox(item)" type="checkbox"/>
-              </label>
-            </td>
-            <td>{{item.object.name}}</td>
-            <td>{{item.object.note}}</td>
-            <td>{{item.object.alarms}}</td>
-            <td style="width: 150px">{{item.firstAlarm}}</td>
-            <td style="width: 150px">{{item.lastAlarm}}</td>
-            <td style="width: 150px">{{item.differenceAlarm}} сек</td>
-          </tr>
+        <tr v-for="(item, index) in tableMetricaObjects">
+          <td style="width: 55px;">
+            <label>
+              <input v-model="item.selected" :disabled="!item.selected && selectedObjects.length >= 3"
+                     v-on:click="selectCheckBox(item)" type="checkbox"/>
+            </label>
+          </td>
+          <td>{{item.object.name}}</td>
+          <td @click="getObjectPassport(item)">{{item.object.note}}</td>
+          <td>{{item.object.alarms}}</td>
+          <td style="width: 150px">{{item.firstAlarm}}</td>
+          <td style="width: 150px">{{item.lastAlarm}}</td>
+          <td style="width: 150px">{{item.differenceAlarm}} сек</td>
+        </tr>
         </tbody>
       </float-thead-table>
     </div>
@@ -83,6 +84,7 @@
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import FloatThead from 'vue-floatthead';
   import Vue from 'vue'
+  import { bus } from "../../assets/js/utils/bus";
 
   Vue.use(FloatThead);
 
@@ -94,27 +96,93 @@
       }
     },
     components: {
-      FloatThead
+      FloatThead,
+    },
+    mounted() {
+      let vm = this;
+      bus.$on('resetScroll', function (payLoad) {
+        vm.resetScroll = payLoad;
+      });
+      let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+      if (funcUtils.isNotEmpty(floatTheadWrapper)) {
+        floatTheadWrapper.addEventListener('scroll', this.handleScroll);
+      }
     },
     data() {
       return {
         allChecked: false,
         selectedObjects: [],
+        selectAlarms: false,
         objectsLength: 0,
-        searchKey: ''
+        searchKey: '',
+        scrollCount: 40
       }
     },
     computed: {
       tableMetricaObjects: function () {
-        let tableMetricaData = this.getTableMetricaData();
-        let res;
-        if (tableMetricaData) {
-          res = tableMetricaData;
+        let res = [];
+        let data = this.$store.state.monitorViewData.data;
+        if (data) {
+          let formatDate = function (date) {
+            let now = date;
+            let year = "" + now.getFullYear();
+            let month = "" + (now.getMonth() + 1);
+            if (month.length === 1) {
+              month = "0" + month;
+            }
+            let day = "" + now.getDate();
+            if (day.length === 1) {
+              day = "0" + day;
+            }
+            let hour = "" + now.getHours();
+            if (hour.length === 1) {
+              hour = "0" + hour;
+            }
+            let minute = "" + now.getMinutes();
+            if (minute.length === 1) {
+              minute = "0" + minute;
+            }
+            let second = "" + now.getSeconds();
+            if (second.length === 1) {
+              second = "0" + second;
+            }
+            return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
+          };
+          let objects = data.objects;
+          this.objectsLength = objects.length;
+          this.searchKey = data.filter || '';
+          let selectedObjects = data.selectObj;
+          this.selectedObjects = selectedObjects;
+          this.allChecked = selectedObjects.length > 0;
+          this.selectAlarms = data.selectAlarms.length > 0;
+          if (this.selectAlarms || this.scrollCount < 40) {
+            this.scrollCount = 40;
+          }
+          if (this.scrollCount > this.objectsLength) {
+            this.scrollCount = this.objectsLength;
+          }
+          for (let i = 0; i < this.scrollCount; i++) {
+            let object = {
+              selected: selectedObjects.includes(objects[i].id),
+              id: objects[i].id,
+              firstAlarm: !funcUtils.isNull(objects[i].firstAlarm) ? formatDate(new Date(objects[i].firstAlarm)) : '',
+              lastAlarm: !funcUtils.isNull(objects[i].lastAlarm) ? formatDate(new Date(objects[i].lastAlarm)) : '',
+              differenceAlarm: !funcUtils.isNull(objects[i].firstAlarm) && !funcUtils.isNull(objects[i].lastAlarm) ? (objects[i].lastAlarm - objects[i].firstAlarm) / 1000 : '',
+              object: objects[i]
+            };
+            res.push(object);
+          }
         }
         return res;
       }
     },
     methods: {
+      handleScroll() {
+        let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+        if( floatTheadWrapper.offsetHeight + floatTheadWrapper.scrollTop >= floatTheadWrapper.scrollHeight ) {
+          this.scrollCount += 40;
+        }
+      },
       scrollContainer(table) {
         return table.parent();
       },
@@ -127,6 +195,8 @@
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
+              this.scrollCount = 40;
+              document.getElementById('floatTheadWrapper').scrollTop = 0;
               this.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
@@ -191,56 +261,22 @@
             alert(eventResponse.message);
           });
       },
-      getTableMetricaData: function () {
-        let res = null;
-        let data = this.$store.state.monitorViewData.data;
-        if (data) {
-          let formatDate = function (date) {
-            let now = date;
-            let year = "" + now.getFullYear();
-            let month = "" + (now.getMonth() + 1);
-            if (month.length === 1) {
-              month = "0" + month;
-            }
-            let day = "" + now.getDate();
-            if (day.length === 1) {
-              day = "0" + day;
-            }
-            let hour = "" + now.getHours();
-            if (hour.length === 1) {
-              hour = "0" + hour;
-            }
-            let minute = "" + now.getMinutes();
-            if (minute.length === 1) {
-              minute = "0" + minute;
-            }
-            let second = "" + now.getSeconds();
-            if (second.length === 1) {
-              second = "0" + second;
-            }
-            return day + "." + month + "." + year + " " + hour + ":" + minute + ":" + second;
-          };
-          res = [];
-          let objects = data.objects;
-          this.objectsLength = objects.length;
-          this.searchKey = data.filter || '';
-          let selectedObjects = data.selectObj;
-          this.selectedObjects = selectedObjects;
-          this.allChecked = selectedObjects.length > 0;
-          for (let i = 0; i < objects.length; i++) {
-            let object = {
-              selected: selectedObjects.includes(objects[i].id),
-              id: objects[i].id,
-              firstAlarm: !funcUtils.isNull(objects[i].firstAlarm) ? formatDate(new Date(objects[i].firstAlarm)) : '',
-              lastAlarm: !funcUtils.isNull(objects[i].lastAlarm) ? formatDate(new Date(objects[i].lastAlarm)) : '',
-              differenceAlarm: !funcUtils.isNull(objects[i].firstAlarm) && !funcUtils.isNull(objects[i].lastAlarm) ? (objects[i].lastAlarm - objects[i].firstAlarm) / 1000 : '',
-              object: objects[i]
-            };
-            res.push(object);
-          }
+      getObjectPassport: function (object) {
+        let monitorViewData = this.$store.state.monitorViewData.data;
+        let params = {
+          'objId': object.id,
+          'objType': object.object.type,
+          'dateBeg': monitorViewData.dateBeg,
+          'dateEnd': monitorViewData.dateEnd
+        };
+        if (funcUtils.isNull(monitorViewData.dateBeg)) {
+          alert("Начальный период необходимо заполнить!");
+          return;
         }
-        return res;
-      },
+        funcUtils.getNextComponent(this.$store.state.objectViewData.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.objectViewData.routeName, params);
+        });
+      }
     }
   }
 </script>

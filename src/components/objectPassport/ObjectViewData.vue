@@ -3,6 +3,7 @@
     <!--Главное меню-->
     <page-aside></page-aside>
     <!--/Главное меню-->
+
     <el-container>
       <!--Хедер экрана-->
       <el-header height="30" class="dc-page-header">
@@ -10,8 +11,10 @@
           <el-col
             :span="12"
             class="flex-parent flex-parent--center-cross">
-            <h1>Проезды и нарушения</h1>
-            <div class="dc-widget-item__caption" style="margin-left: 10px;">год 6 мес. 24 дня 6ч 11м</div>
+            <el-button size="mini" class="dc-button-icon-medium" title="Вернуться на предыдущий экран">
+              <img src="../../assets/img/icon-back-blue.svg" alt="">
+            </el-button>
+            <h1>Паспорт объекта</h1>
           </el-col>
           <el-col :span="4" class="flex-parent flex-parent--end-main flex-parent--center-cross">
             <el-switch
@@ -22,7 +25,6 @@
               style="margin-right: 10px;"
               title="Уведомления">
             </el-switch>
-
 
             <el-button @click="refresh" size="mini" class="dc-button-icon-medium" title="Действие">
               <img src="../../assets/img/icon-reload-white.svg" alt="">
@@ -43,10 +45,12 @@
                 <el-button size="mini" type="text" @click="visible2 = false">cancel</el-button>
                 <el-button type="primary" size="mini" @click="visible2 = false">confirm</el-button>
               </div>
+
               <el-button slot="reference" size="mini" class="dc-button-icon-medium" title="Действие">
                 <img src="../../assets/img/icon-burger-large-white.svg" alt="">
               </el-button>
             </el-popover>
+
           </el-col>
         </el-row>
       </el-header>
@@ -58,80 +62,80 @@
           class="dc-widget-grid"
           :layout="gridTilesLayout"
           :col-num="24"
-          :row-height="100"
+          :row-height="10"
           :is-draggable="true"
           :is-resizable="true"
           :is-mirrored="false"
-          :vertical-compact="true"
+          :vertical-compact="false"
           :margin="[5, 5]"
           :use-css-transforms="true">
 
-          <!--Тайл "Типы и уровни"-->
-          <grid-item class="dc-widget-grid__item"
+          <!--Тайл "Основные сведения" -->
+          <grid-item class="dc-widget-grid__item bg-transparent"
                      :x="gridTilesLayout[0].x"
                      :y="gridTilesLayout[0].y"
                      :w="gridTilesLayout[0].w"
                      :h="gridTilesLayout[0].h"
                      :i="gridTilesLayout[0].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-pie-chart :title="gridTilesLayout[0].i" ref="metricaPassportPieChart">
-            </metrica-passport-tile-pie-chart>
+            <object-passport-tile-description
+              :title="gridTilesLayout[0].i"></object-passport-tile-description>
           </grid-item>
-          <!--/Тайл "Типы и уровни"-->
+          <!--/Тайл "Основные сведения" -->
 
-          <!--Тайл "Список алертов"-->
+          <!--Тайл "На карте" -->
           <grid-item class="dc-widget-grid__item"
-                     style="overflow: hidden;"
+                     @moved="tileMoveEvent"
                      :x="gridTilesLayout[1].x"
                      :y="gridTilesLayout[1].y"
                      :w="gridTilesLayout[1].w"
                      :h="gridTilesLayout[1].h"
                      :i="gridTilesLayout[1].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-pie-chart-alerts-list :title="gridTilesLayout[1].i" ref="metricaPassportAlerts">
-            </metrica-pie-chart-alerts-list>
+            <object-passport-map :title="gridTilesLayout[1].i"></object-passport-map>
           </grid-item>
-          <!--/Тайл "Список алертов"-->
+          <!--/Тайл "На карте" -->
 
-          <!--Тайл "Стики"-->
+          <!--Тайл "Алерты на объекте" -->
           <grid-item class="dc-widget-grid__item"
+                     @moved="tileMoveEvent"
                      :x="gridTilesLayout[2].x"
                      :y="gridTilesLayout[2].y"
                      :w="gridTilesLayout[2].w"
                      :h="gridTilesLayout[2].h"
                      :i="gridTilesLayout[2].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-sticks :title="gridTilesLayout[2].i">
-            </metrica-passport-tile-sticks>
+            <object-passport-tile-alerts-list ref="objectPassportAlerts"
+              :title="gridTilesLayout[2].i"></object-passport-tile-alerts-list>
           </grid-item>
-          <!--/Тайл "Стики"-->
+          <!--/Тайл "Алерты на объекте" -->
 
-          <!--Тайл "График показателей по времени"-->
+          <!--Тайл "График метрики" -->
           <grid-item class="dc-widget-grid__item"
+                     @moved="tileMoveEvent"
                      :x="gridTilesLayout[3].x"
                      :y="gridTilesLayout[3].y"
                      :w="gridTilesLayout[3].w"
                      :h="gridTilesLayout[3].h"
                      :i="gridTilesLayout[3].i"
                      drag-allow-from=".dc-widget-grid__item__header">
-            <metrica-passport-tile-line-chart :title="gridTilesLayout[3].i" ref="metricaPassportLineChart">
-            </metrica-passport-tile-line-chart>
+            <object-passport-tile-line-chart
+              :title="gridTilesLayout[3].i"></object-passport-tile-line-chart>
           </grid-item>
-          <!--/Тайл "График показателей по времени"-->
+          <!--/Тайл "График метрики" -->
 
-          <!--Тайл "Таблица-список объектов"-->
+          <!--Тайл "Стики"-->
           <grid-item class="dc-widget-grid__item"
                      :x="gridTilesLayout[4].x"
                      :y="gridTilesLayout[4].y"
                      :w="gridTilesLayout[4].w"
                      :h="gridTilesLayout[4].h"
                      :i="gridTilesLayout[4].i"
-                     drag-allow-from=".dc-widget-grid__item__header"
-                     drag-ignore-from="input">
-            <metrica-passport-table :title="gridTilesLayout[4].i" ref="metricaPassportTable">
-            </metrica-passport-table>
+                     drag-allow-from=".dc-widget-grid__item__header">
+            <object-passport-tile-sticks :title="gridTilesLayout[4].i">
+            </object-passport-tile-sticks>
           </grid-item>
-          <!--/Тайл "Таблица-список объектов"-->
+          <!--/Тайл "Стики"-->
         </grid-layout>
       </el-main>
       <!--/Область контента-->
@@ -139,51 +143,49 @@
   </el-container>
 </template>
 
-
 <script>
-  // TODO: импортируем компоненты сюда...
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
 
-  import MetricaPassportTilePieChart from "./MetricaPassportTilePieChart"
-  import MetricaPieChartAlertsList from "./MetricaPassportTileAlertsList"
-  import MetricaPassportTileSticks from "./MetricaPassportTileSticks"
-  import MetricaPassportTileLineChart from "./MetricaPassportTileLineChart"
-  import MetricaPassportTable from "./MetricaPassportTileTable"
+  import ObjectPassportTileDescription from "./ObjectPassportTileDescription.vue"
+  import ObjectPassportMap from "./ObjectPassportTileMap.vue"
+  import ObjectPassportTileAlertsList from "./ObjectPassportTileAlertsList.vue"
+  import ObjectPassportTileLineChart from "./ObjectPassportTileLineChart.vue"
+  import ObjectPassportTileSticks from "./ObjectPassportTileSticks.vue"
   import * as RequestEntity from '../../assets/js/api/requestEntity';
   import {RequstApi} from '../../assets/js/api/requestApi';
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import PageAside from "../SharedWidgets/PageAside";
-  import { bus } from "../../assets/js/utils/bus";
+  import {bus} from "../../assets/js/utils/bus";
 
   export default {
-    // TODO: ...и сюда
     components: {
-      PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
-      MetricaPassportTilePieChart,
-      MetricaPieChartAlertsList,
-      MetricaPassportTileSticks,
-      MetricaPassportTileLineChart,
-      MetricaPassportTable,
+      ObjectPassportTileDescription,
+      ObjectPassportMap,
+      ObjectPassportTileAlertsList,
+      ObjectPassportTileLineChart,
+      ObjectPassportTileSticks,
+      PageAside,
     },
+    name: "object-passport-layout",
     computed: {
-      monitorViewData: function () {
-        return this.$store.state.monitorViewData.data
+      objectViewData: function () {
+        return this.$store.state.objectViewData.data
       }
     },
     beforeCreate: function () {
       let wid = sessionStorage.getItem('wid');
       let componentsRoute = funcUtils.getFromSessionStorage(wid);
       let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-      this.$store.dispatch('monitorViewDataSetCid', currentComponent.cid);
+      this.$store.dispatch('objectViewDataSetCid', currentComponent.cid);
       let method = 'getData';
       let params = this.$route.params;
-      if (!funcUtils.isNotEmpty(params.ruleId) && !funcUtils.isNotEmpty(params.dateBeg)) {
+      if (!funcUtils.isNotEmpty(params.objId) && !funcUtils.isNotEmpty(params.objType) && !funcUtils.isNotEmpty(params.dateBeg)) {
         method = 'restore';
         params = null;
       }
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, method);
+      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.objectViewData.bean, method);
       let requestParam = new RequestEntity.RequestParam(requestHead, params);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
@@ -195,31 +197,35 @@
           alert(eventResponse.message);
         });
     },
+    mounted: function () {
+      let vm = this;
+      this.$store.watch(this.$store.getters.objectViewDataGetCommand, state => {
+        vm.updateOnCommand(state);
+      });
+      bus.$on('refresh', function () {
+        vm.refresh();
+      });
+    },
     data() {
       return {
         // Список тайлов виджетов для грида макета
         gridTilesLayout: [
-          {i: 'Типы и уровни', x: 0, y: 0, w: 7, h: 4},
-          {i: 'Список алертов', x: 0, y: 3, w: 7, h: 4},
-          {i: 'Стики', x: 7, y: 0, w: 17, h: 3.2},
-          {i: 'График показателей', x: 7, y: 0, w: 17, h: 4},
-          {i: 'Список объектов', x: 7, y: 5, w: 17, h: 4}
+          {i: 'Основные сведения', x: 0, y: 0, w: 4, h: 25},
+          {i: 'На карте', x: 0, y: 30, w: 4, h: 38},
+          {i: 'Алерты на объекте', x: 4, y: 0, w: 6, h: 63},
+          {i: 'График метрики', x: 10, y: 0, w: 14, h: 40},
+          {i: 'Стики', x: 10, y: 40, w: 14, h: 30}
         ],
+        isMainMenuCollapsed: true,
         headerSwitch: false
       };
-    },
-    mounted: function () {
-      let vm = this;
-      this.$store.watch(this.$store.getters.monitorViewDataGetCommand, state => {
-        vm.updateOnCommand(state);
-      })
     },
     methods: {
       updateOnCommand: function () {
         let wid = sessionStorage.getItem('wid');
         let componentsRoute = funcUtils.getFromSessionStorage(wid);
         let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, 'restore');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.objectViewData.bean, 'restore');
         let requestParam = new RequestEntity.RequestParam(requestHead, null);
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -232,25 +238,19 @@
           });
       },
       refresh: function () {
-        let alerts = this.$refs.metricaPassportAlerts;
-        let table = this.$refs.metricaPassportTable;
+        let alerts = this.$refs.objectPassportAlerts;
         let wid = sessionStorage.getItem('wid');
         let componentsRoute = funcUtils.getFromSessionStorage(wid);
         let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
         let methodName;
         let requestBody;
-        if (table.selectedObjects.length > 0) {
-          table.selectedObjects = [];
-          methodName = 'selectObjects';
-          requestBody = {ids: table.selectedObjects};
-        } else if (alerts.selectedAlarms.length > 0) {
-          bus.$emit('resetScroll', true);
+        if (alerts.selectedAlarms.length > 0) {
           alerts.selectedAlarms = [];
           methodName = 'selectAlarms';
           requestBody = {ids: alerts.selectedAlarms};
         }
         if (methodName && requestBody) {
-          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorViewData.bean, methodName);
+          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.objectViewData.bean, methodName);
           let requestParam = new RequestEntity.RequestParam(requestHead, requestBody);
           RequstApi.sendHttpRequest(requestParam)
             .then(eventResponse => {
@@ -265,11 +265,18 @@
       },
       getPrev: function () {
         funcUtils.getPrevComponent(() => {
-          funcUtils.getPrevPage(this.$router, this.$store.state.monitorDict.routeName);
+          funcUtils.getPrevPage(this.$router, this.$store.state.monitorViewData.routeName);
         });
+      },
+      toggleMainMenu() {
+        this.isMainMenuCollapsed = !this.isMainMenuCollapsed;
+      },
+      tileMoveEvent: function(i, newX, newY){
+        console.log("MOVE i=" + i + ", X=" + newX + ", Y=" + newY);
       }
-    }
+    },
   }
+
 </script>
 
 <style lang="scss">
@@ -358,13 +365,17 @@
         align-items: center;
         background: #28282e;
 
-        .dc-button-icon-small:last-child  {
+        .dc-button-icon-small:last-child {
           margin-left: 0;
           margin-top: 5px;
         }
       }
     }
 
+  }
+
+  .bg-transparent .dc-widget-grid__item__header__buttons {
+    background: #28282e !important;
   }
 
   .dc-page-container {
@@ -527,6 +538,32 @@
       display: inline-block;
       width: inherit;
       height: inherit;
+    }
+  }
+
+  .dc-inner-tile-box {
+    $bg-offset: 10px;
+    padding: 15px;
+    margin-bottom: 5px;
+    background: no-repeat calc(100% - #{$bg-offset}) $bg-offset;
+    border-radius: 5px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &.dc-inner-tile-box--medium-gray {
+      background-color: rgba(40, 40, 46, 0.6);
+
+    }
+
+    &.dc-inner-tile-box--dark-gray {
+      background-color: rgba(40, 40, 46, 0.45);
+    }
+
+    &.dc-inner-tile-box--is-working {
+      background-image: url("../../assets/img/icon-play-gray-bg.svg");
+      background-size: 64px;
     }
   }
 

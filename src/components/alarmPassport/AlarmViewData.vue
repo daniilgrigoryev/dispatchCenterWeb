@@ -192,6 +192,7 @@
       this.$store.dispatch('alarmViewDataSetCid', currentComponent.cid);
       let method = 'getData';
       let params = this.$route.params;
+      delete params.beanName;
       if (!funcUtils.isNotEmpty(params.alarmId) && !funcUtils.isNotEmpty(params.dateBeg)) {
         method = 'restore';
         params = null;
@@ -233,8 +234,10 @@
           });
       },
       getPrev: function () {
+        let path = funcUtils.getFromSessionStorage('path');
+        let currentPage = funcUtils.getCurrentPage(path);
         funcUtils.getPrevComponent(() => {
-          funcUtils.getPrevPage(this.$router, this.$store.state.monitorViewData.routeName);
+          funcUtils.getPrevPage(this.$router, this.$store.state[currentPage.params.beanName].routeName);
         });
       },
       toggleMainMenu() {

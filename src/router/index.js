@@ -4,6 +4,7 @@ import Authorization from './../components/Authorization'
 import MonitorDict from '../components/MonitorDict'
 import MonitorViewData from '../components/metricaPassport/MonitorViewData'
 import AlarmViewData from '../components/alarmPassport/AlarmViewData'
+import ObjectViewData from '../components/objectPassport/ObjectViewData'
 import MonitorReestr from '../components/MonitorReestr'
 import MonitorEdit from '../components/MonitorEdit'
 import AlarmRuleReestr from '../components/AlarmRuleReestr'
@@ -37,6 +38,12 @@ const router = new Router({
       path: '/alarmViewData',
       name: 'AlarmViewData',
       component: AlarmViewData,
+      props: true
+    },
+    {
+      path: '/objectViewData',
+      name: 'ObjectViewData',
+      component: ObjectViewData,
       props: true
     },
     {

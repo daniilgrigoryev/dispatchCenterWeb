@@ -75,10 +75,10 @@
                     <i class="dc-alert-passport__icon dc-alert-passport__icon--actions-chooser"></i>
                     шаблоны действий
                 </span>
-        <div v-if="actionsTemplateList.length > 0" :class="['dc-alert-passport__carousel',  {'dc-alert-passport__carousel--expanded': activeActionsTemplate} ]">
-          <div class="dc-alert-passport__carousel__wrap">
+        <div :class="['dc-carousel',  {'dc-carousel--expanded': activeActionsTemplate} ]">
+          <div class="dc-carousel__wrap">
             <!-- Список темплейтов -->
-            <div class="dc-alert-passport__carousel__slide">
+            <div class="dc-carousel__slide">
               <el-input
                 size="mini"
                 clearable
@@ -100,15 +100,15 @@
             <!-- /Список темплейтов -->
 
             <!-- Действия темплейта -->
-            <div v-if="activeActionsTemplate" class="dc-alert-passport__carousel__slide">
-              <div class="dc-alert-passport__carousel__slide__header flex-parent flex-parent--space-between-main"
+            <div v-if="activeActionsTemplate" class="dc-carousel__slide">
+              <div class="dc-carousel__slide__header flex-parent flex-parent--space-between-main"
                    title="Закрыть подменю шаблонов"
                    @click="activeActionsTemplate = null; setGraphVisible(true)">
                 <div>
-                  <div class="dc-alert-passport__carousel__slide__heading">
+                  <div class="dc-carousel__slide__heading">
                     {{activeActionsTemplate.title}}
                   </div>
-                  <div class="dc-alert-passport__carousel__slide__subheading">
+                  <div class="dc-carousel__slide__subheading">
                     действий: <span>{{activeActionsTemplate.templateActions.length}}</span>
                   </div>
                 </div>
@@ -591,41 +591,41 @@
     }
   }
 
-  .dc-alert-passport__carousel {
+  .dc-carousel {
     position: relative;
     overflow: hidden;
 
-    &.dc-alert-passport__carousel--expanded {
-      .dc-alert-passport__carousel__wrap {
+    &.dc-carousel--expanded {
+      .dc-carousel__wrap {
         transform: translateX(-50%);
       }
     }
   }
 
-  .dc-alert-passport__carousel__wrap {
+  .dc-carousel__wrap {
     transition: all 200ms ease-in;
     display: flex;
     width: 200%;
   }
 
-  .dc-alert-passport__carousel__slide {
+  .dc-carousel__slide {
     width: 100%;
     overflow-y: auto;
   }
 
-  .dc-alert-passport__carousel__slide__header {
+  .dc-carousel__slide__header {
     padding: 0 8px;
     cursor: pointer;
   }
 
-  .dc-alert-passport__carousel__slide__heading {
+  .dc-carousel__slide__heading {
     font-size: 17px;
     text-transform: uppercase;
     color: white;
     line-height: 1.2;
   }
 
-  .dc-alert-passport__carousel__slide__subheading {
+  .dc-carousel__slide__subheading {
     margin-bottom: 5px;
     color: #7e8c91;
     font-size: 13px;

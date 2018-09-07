@@ -1,20 +1,19 @@
 <template>
-  <div style="height: 100%;">
+  <div>
     <!--Хедер тайла-->
     <!--TODO: хедер надо вынести в общий компонент-->
     <div class="dc-widget-grid__item__header">
       <div class="dc-widget-grid__item__header__captions">
         <h5>{{title}}</h5>
-        <div class="dc-widget-item__caption">по времени</div>
+        <div class="dc-widget-item__caption">
+          показателей:
+          <span class="dc-widget-item__caption__value--2 color-purple">4</span>
+        </div>
+
       </div>
 
       <div class="dc-widget-grid__item__header__right-column">
         <div class="dc-widget-grid__item__header__buttons">
-          <el-tooltip class="item" effect="dark" content="Показать легенду" placement="left-start">
-            <el-button size="mini" class="dc-button-icon-small">
-              <img src="../../assets/img/icon-tag-small-white.svg" alt="">
-            </el-button>
-          </el-tooltip>
 
           <el-tooltip class="item" effect="dark" content="Раскрыть на весь экран" placement="bottom">
             <el-button size="mini" class="dc-button-icon-small">
@@ -34,32 +33,47 @@
 
     <!--/Линейная диаграмма-->
     <echarts
-      style="width: 100%"
+      style="width: 100%; height: 520px;"
+      ref="lineChartRef"
       :options="lineChart"
-      ref="alarmPassportLineChart"
-      auto-resize
-    >
+      auto-resize>
     </echarts>
     <!--/Линейная диаграмма-->
   </div>
 </template>
 
 <script>
-  import echarts from 'vue-echarts/components/ECharts'
+  import echarts from 'vue-echarts/components/ECharts';
+  import {bus} from "../../assets/js/utils/bus";
   import * as funcUtils from '../../assets/js/utils/funcUtils';
+  /* для ф-ций форматтера */
 
   export default {
-    name: "AlarmPassportTileLineChart",
-    components: {echarts},
+    name: "object-passport-tile-line-chart",
     props: {
-      title: {
-        type: String
-      }
+      title: String
     },
+    components: {echarts},
     data() {
       return {
-        chartDataSize: 0
+        data: null,
+        chartDataSize: 0,
+        clicked: false
       }
+    },
+    mounted() {
+      let vm = this;
+      bus.$on('setActiveMonitor', function (payLoad) {
+        if (funcUtils.isNotEmpty(vm.$refs.lineChartRef)) {
+          if (funcUtils.isEmpty(payLoad.monitor)) {
+            vm.$refs.lineChartRef.clear();
+          } else {
+            vm.data = payLoad.monitor;
+            vm.$refs.lineChartRef.refresh();
+          }
+          vm.clicked = payLoad.clicked;
+        }
+      });
     },
     computed: {
       lineChart: function () {
@@ -89,15 +103,19 @@
           return day + "." + month + "." + year + "\n" + hour + ":" + minute + ":" + second; //
         };
         let option;
-        let data = this.$store.state.alarmViewData.data;
+        let data = this.data;
+        let storeData = this.$store.state.objectViewData.data;
         if (data) {
+          if (!this.clicked) {
+            this.clicked = false;
+            return {};
+          }
           option = {
             dataZoom: [
               {
                 type: 'slider',
                 show: true,
                 realtime: true,
-                bottom: '6%'
               },
               {
                 type: 'inside',
@@ -105,25 +123,12 @@
                 realtime: true
               }
             ],
-            color:
-              [
-                '#0f0',
-                '#ba55d3',
-                '#87ceeb',
-                '#ff6969',
-                '#ffd700',
-                '#ffe4b5',
-                '#8a2be2',
-                '#c71585',
-                '#008080',
-                '#b22222',
-                '#e0830a',
-                '#1c91c0',
-                '#00c000',
-                '#c0c0c0',
-                '#9999ff',
-                '#afffaf',
-              ],
+            color: [
+              '#5a71e2',
+              '#80b2f2',
+              '#762dea',
+              '#0068ff'
+            ],
             textStyle: {
               fontSize: '13',
               color: 'rgba(114, 135, 165, 0.85)'
@@ -150,11 +155,12 @@
             },
             tooltip: {
               trigger: 'axis',
-              padding: 5,
-              backgroundColor: 'rgba(44,50,61,0.9)',
-              borderWidth: 1,
-              textStyle: {
-                color: "#c7cae2"
+              axisPointer: {
+                show: true,
+                lineStyle: {
+                  type: 'dashed',
+                  color: 'rgba(255,255,255,0.3)'
+                }
               },
               formatter: function (params) {
                 let res = '<div>';
@@ -170,7 +176,7 @@
                 res += '</div>';
                 res += '</div>';
                 return res;
-              }
+              },
             },
             legend: {
               data: [],
@@ -205,11 +211,20 @@
             xAxis: {
               type: 'time',
               boundaryGap: false,
-              maxInterval: 3600 * 1000 * 24 * 10,
-              splitLine: {
-                show: false
+              axisTick: false,
+              axisLine: {
+                show: true,
               },
+              splitLine: {
+                lineStyle: {
+                  color: 'rgba(126,140,145,0.1)'
+                }
+              },
+              maxInterval: 3600 * 1000 * 24 * 10,
               axisLabel: {
+                textStyle: {
+                  color: "rgba(114, 135, 165, 0.85)"
+                },
                 formatter: (data) => {
                   return formatDate(new Date(data));
                 },
@@ -218,17 +233,29 @@
             yAxis: {
               type: 'value',
               boundaryGap: false,
+              axisLine: {
+                show: true,
+              },
+              axisTick: false,
               splitLine: {
-                show: false
+                lineStyle: {
+                  color: 'rgba(126,140,145,0.1)'
+                }
+              },
+              axisLabel: {
+                textStyle: {
+                  color: "rgba(114, 135, 165, 0.85)"
+                }
               },
             },
-            series: null
+            series: []
           };
-          let series = [];
           let chartDataSize = 0;
           let grafic = data.graph;
           let sortableGraph = [];
-          let valueYMax = [];
+          let selectedAlarms = storeData.alarms.filter(item => {
+            return storeData.selectAlarms.includes(item.id);
+          });
           for (let prop in grafic) {
             if (grafic.hasOwnProperty(prop)) {
               let graphVal = {
@@ -242,9 +269,6 @@
                 return a.d - b.d;
               });
               graphVal.min = graphVal.values[0].d;
-              if (!valueYMax.includes(graphVal.max)) {
-                valueYMax.push(graphVal.max);
-              }
               sortableGraph.push(graphVal);
             }
           }
@@ -264,43 +288,44 @@
               },
               symbol: 'roundRect'
             };
+            if (funcUtils.isNotEmpty(selectedAlarms) && selectedAlarms.length > 0) {
+              selectedAlarms.forEach((alarm) => {
+                option.series.push({
+                  name: alarm.id,
+                  type: 'scatter',
+                  xAxisIndex: 0,
+                  yAxisIndex: 0,
+                  data: [],
+                  markLine: {
+                    animation: false,
+                    lineStyle: {
+                      normal: {
+                        type: 'solid',
+                        color: '#FFF',
+                        width: 7,
+                      }
+                    },
+                    tooltip: {
+                      show: false
+                    },
+                    data: [[{
+                      coord: [alarm.alarmTime, item.max],
+                      symbol: 'none'
+                    }, {
+                      coord: [alarm.alarmTime, 0],
+                      symbol: 'none'
+                    }]]
+                  }
+                });
+              });
+            }
             item.values.forEach((val) => {
               serie.data.push([new Date(val.d), val.v]);
             });
             chartDataSize += 1;
-            series.push(serie);
-          });
-          valueYMax.forEach((item, index) => {
-            series.push({
-              name: 'I' + index,
-              type: 'scatter',
-              xAxisIndex: 0,
-              yAxisIndex: 0,
-              data: [],
-              markLine: {
-                animation: false,
-                lineStyle: {
-                  normal: {
-                    type: 'solid',
-                    color: '#FFF',
-                    width: 7,
-                  }
-                },
-                tooltip: {
-                  show: false
-                },
-                data: [[{
-                  coord: [data.alarmTime, item],
-                  symbol: 'none'
-                }, {
-                  coord: [data.alarmTime, 0],
-                  symbol: 'none'
-                }]]
-              }
-            });
+            option.series.push(serie);
           });
           this.chartDataSize = chartDataSize;
-          option.series = series;
         }
         return option;
       }
@@ -308,6 +333,6 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss">
 
 </style>
