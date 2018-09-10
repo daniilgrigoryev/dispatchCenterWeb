@@ -244,7 +244,7 @@
         let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
         let methodName;
         let requestBody;
-        if (alerts.selectedAlarms.length > 0) {
+        if (funcUtils.isNotEmpty(alerts) && alerts.selectedAlarms.length > 0) {
           alerts.selectedAlarms = [];
           methodName = 'selectAlarms';
           requestBody = {ids: alerts.selectedAlarms};

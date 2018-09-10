@@ -64,12 +64,12 @@
                      v-on:click="selectCheckBox(item)" type="checkbox"/>
             </label>
           </td>
-          <td>{{item.object.name}}</td>
+          <td @click="getObjectPassport(item)">{{item.object.name}}</td>
           <td @click="getObjectPassport(item)">{{item.object.note}}</td>
-          <td>{{item.object.alarms}}</td>
-          <td style="width: 150px">{{item.firstAlarm}}</td>
-          <td style="width: 150px">{{item.lastAlarm}}</td>
-          <td style="width: 150px">{{item.differenceAlarm}} сек</td>
+          <td @click="getObjectPassport(item)">{{item.object.alarms}}</td>
+          <td @click="getObjectPassport(item)" style="width: 150px">{{item.firstAlarm}}</td>
+          <td @click="getObjectPassport(item)" style="width: 150px">{{item.lastAlarm}}</td>
+          <td @click="getObjectPassport(item)" style="width: 150px">{{item.differenceAlarm}} сек</td>
         </tr>
         </tbody>
       </float-thead-table>
@@ -299,6 +299,11 @@
     tbody {
       tr {
         border-bottom: 1px solid #353b4a;
+
+        &:hover {
+          background: #edf2fc;
+          cursor: pointer;
+        }
 
         td {
           text-align: center;

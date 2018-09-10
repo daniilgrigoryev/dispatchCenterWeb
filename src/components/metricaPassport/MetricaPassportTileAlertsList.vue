@@ -28,10 +28,86 @@
         </div>
       </div>
     </div>
+
+    <el-carousel id="metricaCarousel" :autoplay="false" ref="carousel" arrow="never">
+      <!--Список алертов-->
+      <el-carousel-item>
+        <ul class="dc-alerts-list" v-show="activeAlertsListSize === null">
+          <li v-for="(item, index) in alertsList" :class="['dc-alerts-list__type ' + item.dcAlertsListType]"
+              v-bind:title="item.name" v-bind:name="index">
+            <!--Алерты – немедленный уровень-->
+            <div v-bind:class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
+                 @click="setActiveAlertItem(index, item); setCarouselItem(1)">
+              <div>
+                <div class="dc-alerts-list__type__level__heading">{{item.name}}</div>
+                <div class="dc-alerts-list__type__level__subheading">{{item.levelName}}</div>
+              </div>
+              <div style="margin-left: auto; display: flex; align-items: center;">
+                <div class="dc-alerts-list__type__level__value">{{item.count}}</div>
+                <el-button type="text" icon="el-icon-arrow-right"
+                           class="dc-alerts-list__type__level__toggler"></el-button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </el-carousel-item>
+      <!--/Список алертов-->
+
+      <!--Развернутый алерт-->
+      <el-carousel-item class="dc-alerts-list__type--active">
+        <div v-if="activeAlertsListSize !== null" v-bind:class="'dc-alerts-list__type__level ' + alertsList[activeAlertListItem].dcAlertsListTypeLevel"
+             @click="setCarouselItem(0); activeAlertListItem = 0; activeAlertsListSize = null;"
+             style="width: 100%;">
+          <div>
+            <div class="dc-alerts-list__type__level__heading">{{alertsList[activeAlertListItem].name}}</div>
+            <div class="dc-alerts-list__type__level__subheading">{{alertsList[activeAlertListItem].levelName}}</div>
+          </div>
+          <div style="margin-left: auto; display: flex; align-items: center;">
+            <div class="dc-alerts-list__type__level__value">{{alertsList[activeAlertListItem].count}}</div>
+            <el-button type="text" icon="el-icon-arrow-right" class="dc-alerts-list__type__level__toggler"></el-button>
+          </div>
+        </div>
+
+        <div id="alertsList">
+          <ul v-if="activeAlertsListSize !== null">
+            <li :class="['dc-alerts-list-item', {'dc-alerts-list-item--selected': alarm.selected}]"
+                :style="{background: alertsList[activeAlertListItem].selected ? '#b5aeb5 !important' : 'transparent'}"
+                v-for="(alarm, indexInner) in alertsList[activeAlertListItem].alarms"
+                :title="alarm.note">
+              <div class='flex-parent'>
+                <div class="flex-child flex-parent flex-parent--center-cross mr24">
+                  <input v-model="alarm.selected" :disabled="!alarm.selected && selectedAlarms.length >= 3"
+                         @click="setActiveAlarm(alarm)" type="checkbox"/>
+                </div>
+                <div class='flex-child'>
+                  <div class="dc-alerts-list-item__name">
+                    <span>камера</span> ID 00-00-00000-0
+                  </div>
+                  <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
+                </div>
+                <div class='flex-child' style="margin-left: auto;">
+                  <div class="dc-alerts-list-item__date">{{alarm.alarmTime | formatDateTime('DD.MM.YYYY')}}</div>
+                  <div class="dc-alerts-list-item__time">{{alarm.alarmTime | formatDateTime('hh:mm')}}</div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </el-carousel-item>
+      <!--/Развернутый алерт-->
+    </el-carousel>
+
+
+
+
+
+
+
+
     <!--/Хедер тайла-->
 
     <!-- Список уровней алертов по типам -->
-    <div style="display: flex; align-items: center;">
+    <!--<div style="display: flex; align-items: center;">
       <transition name="fadeToLeft">
         <ul v-show="activeAlertsListSize === null" id="dc_alerts_list" class="dc-alerts-list" style="height: 385px; width: 100%;">
           <li v-for="(item, index) in alertsList"
@@ -39,7 +115,7 @@
               :row-key="index + 1"
               :class="'dc-alerts-list__type ' + item.dcAlertsListType"
               :title="item.name">
-            <!--Алерты – немедленный уровень-->
+            &lt;!&ndash;Алерты – немедленный уровень&ndash;&gt;
             <div :class="'dc-alerts-list__type__level ' + item.dcAlertsListTypeLevel"
                  @click="setActiveAlertItem(index, item)">
               <div>
@@ -57,7 +133,7 @@
       </transition>
 
       <transition name="fadeToRight">
-        <div :style="{visibility: activeAlertsListSize > 0 ? 'visible' : 'hidden'}"> <!--  :class="'dc-alerts-list__type ' + alertsList[activeAlertListItem].dcAlertsListType" -->
+        <div :style="{visibility: activeAlertsListSize > 0 ? 'visible' : 'hidden'}"> &lt;!&ndash;  :class="'dc-alerts-list__type ' + alertsList[activeAlertListItem].dcAlertsListType" &ndash;&gt;
           <div v-if="activeAlertsListSize !== null" :class="'dc-alerts-list__type__level ' + alertsList[activeAlertListItem].dcAlertsListTypeLevel"
                @click="activeAlertListItem = 0; activeAlertsListSize = null"
                style="position: absolute; width: 100%; top: 32px;">
@@ -77,7 +153,7 @@
                   v-for="(alarm, indexInner) in alertsList[activeAlertListItem].alarms"
                   :title="alarm.note">
                 <div class='flex-parent'>
-                  <div class="flex-child flex-parent flex-parent--center-cross mr24">
+                  <div class="flex-child flex-parent flex-parent&#45;&#45;center-cross mr24">
                     <label>
                       <input v-model="alarm.selected" :disabled="!alarm.selected && selectedAlarms.length >= 3"
                              @click="setActiveAlarm(alarm)" type="checkbox"/>
@@ -99,7 +175,7 @@
           </div>
         </div>
       </transition>
-    </div>
+    </div>-->
      <!--/Алерты – немедленный уровень-->
     <div v-if="alertsList.length <= 0" class="data-empty">data empty😂</div>
     <!--/Список уровней алертов (по типам)-->
@@ -130,7 +206,8 @@
         selectedAlarms: [],
         activeAlertListItem: 0,
         activeAlertsListSize: null,
-        scrollCount: 40
+        scrollCount: 40,
+        selectedCarouselItem: 0
       };
     },
     computed: {
@@ -144,6 +221,7 @@
           this.selectedAlarms = selectedAlarms;
           if (data.selectObj.length > 0) {
             this.activeAlertListItem = 0;
+            this.activeAlertsListSize = null;
           }
           let rulesData = {};
           let rulesList = [];
@@ -247,9 +325,12 @@
           this.scrollCount += 40;
         }
       },
+      setCarouselItem: function (index) {
+        this.$refs.carousel.setActiveItem(index);
+      },
       setActiveAlertItem(index, item) {
         this.activeAlertsListSize = item.alarms.length;
-        if (index + 1 === this.activeAlertListItem) {
+        if (index === this.activeAlertListItem) {
           this.activeAlertListItem = 0;
           this.activeAlertsListSize = 0;
         } else {
@@ -325,12 +406,25 @@
   $-color-alert-type-4: #897213;
   $-color-alert-type-5: #237e22;
 
-  .fadeToLeft-enter-active, .fadeToLeft-leave-active {
+  #metricaCarousel {
+    height: 100%;
+
+    .el-carousel__container {
+      height: 100%;
+
+      #alertsList {
+        height: calc(100% - 44px);
+        overflow-y: auto;
+      }
+    }
+  }
+
+  /*.fadeToLeft-enter-active, .fadeToLeft-leave-active {
     transition: all 300ms ease-in-out;
     transform: translateX(0px);
     opacity: 1;
   }
-  .fadeToLeft-enter, .fadeToLeft-leave-to /* .fadeToLeft-leave-active below version 2.1.8 */ {
+  .fadeToLeft-enter, .fadeToLeft-leave-to !* .fadeToLeft-leave-active below version 2.1.8 *! {
     transition: all 300ms ease-in-out;
     transform: translateX(-719px);
     opacity: 0;
@@ -341,11 +435,11 @@
     transform: translateX(0px);
     opacity: 1;
   }
-  .fadeToRight-enter, .fadeToRight-leave-to /* .fadeToRight-leave-active below version 2.1.8 */ {
+  .fadeToRight-enter, .fadeToRight-leave-to !* .fadeToRight-leave-active below version 2.1.8 *! {
     transition: all 300ms ease-in-out;
     transform: translateX(719px);
     opacity: 0;
-  }
+  }*/
 
   .dc-alerts-wrapper {
     display: flex;

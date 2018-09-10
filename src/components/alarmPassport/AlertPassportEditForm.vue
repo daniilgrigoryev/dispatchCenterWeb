@@ -41,10 +41,10 @@
     </el-form>
 
     <div class="dc-alert-passport__action__buttons flex-parent flex-parent--space-between-main">
-      <button @click="store()" class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--save mb0">
+      <button @click="store()" :disabled="actionForm.disableEdit" class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--save mb0">
         Сохранить
       </button>
-      <button class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--close mb0">
+      <button :disabled="actionForm.disableEdit" class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--close mb0">
         Выйти без сохранения
       </button>
     </div>
@@ -78,6 +78,24 @@
           .then(eventResponse => {
             if (eventResponse.status === 200) {
               vm.actionForm.dataForm = JSON.parse(eventResponse.response).data;
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      });
+      bus.$on('startActionTemplate', function () {
+        debugger;
+        this.store();
+        let wid = sessionStorage.getItem('wid');
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, vm.$store.state.alarmViewData.bean, 'startTemplate');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {template: vm.action.template});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              vm.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
           .catch(eventResponse => {

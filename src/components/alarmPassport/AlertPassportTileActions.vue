@@ -71,7 +71,7 @@
 
       <!-- Выбор экшенов -->
       <el-tab-pane label="шаблоны действий" name="actions-chooser">
-                <span @click="activeActionsTemplate = null; setGraphVisible(true)" slot="label" class="dc-alert-passport__tab-title flex-parent flex-parent--center-cross">
+                <span @click="activeActionsTemplate = null; activeWorkingAction = null; setGraphVisible(true)" slot="label" class="dc-alert-passport__tab-title flex-parent flex-parent--center-cross">
                     <i class="dc-alert-passport__icon dc-alert-passport__icon--actions-chooser"></i>
                     шаблоны действий
                 </span>
@@ -103,7 +103,7 @@
             <div v-if="activeActionsTemplate" class="dc-carousel__slide">
               <div class="dc-carousel__slide__header flex-parent flex-parent--space-between-main"
                    title="Закрыть подменю шаблонов"
-                   @click="activeActionsTemplate = null; setGraphVisible(true)">
+                   @click="activeActionsTemplate = null; activeWorkingAction = null; setGraphVisible(true)">
                 <div>
                   <div class="dc-carousel__slide__heading">
                     {{activeActionsTemplate.title}}
@@ -164,10 +164,10 @@
       </template>
 
       <template v-if="activeTab ==='actions-chooser'">
-        <button class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--run">
+        <button @click="startActionTemplate" class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--run">
           Запустить
         </button>
-        <button class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--run-all">
+        <button @click="startActionsTemplate" class="dc-alert-passport__action-tabs__button dc-alert-passport__action-tabs__button--run-all">
           Запустить всё
         </button>
       </template>
@@ -178,6 +178,8 @@
 <script>
   import * as funcUtils from "../../assets/js/utils/funcUtils";
   import { bus } from "../../assets/js/utils/bus";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
 
   export default {
     name: "alert-passport-tile-actions",
@@ -190,7 +192,8 @@
       return {
         // activeTab: 'working-actions',
         activeTab: 'actions-chooser',
-        activeActionsTemplate: null
+        activeActionsTemplate: null,
+        activeWorkingAction: null
       };
     },
     computed: {
@@ -245,6 +248,7 @@
               templateActionRes.enabled = true;
               templateActionRes.active = false;
               templateActionRes.action = templateAction;
+              templateActionRes.template = template;
               templateRes.templateActions.push(templateActionRes);
             });
             res.push(templateRes);
@@ -259,6 +263,7 @@
           item.disabled = disabled;
         }
         bus.$emit('setActiveAction', item);
+        this.activeWorkingAction = item;
         this.setGraphVisible(false);
       },
       setGraphVisible: function (visible) {
@@ -266,6 +271,42 @@
       },
       setActiveActionsTemplate: function (item) {
         this.activeActionsTemplate = item;
+      },
+      startActionTemplate: function () {
+        let vm = this;
+        let wid = sessionStorage.getItem('wid');
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.alarmViewData.bean, 'startTemplate');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {template: this.activeWorkingAction.template});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              vm.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
+      startActionsTemplate: function () {
+        let vm = this;
+        let wid = sessionStorage.getItem('wid');
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.alarmViewData.bean, 'startTemplate');
+        this.activeActionsTemplate.templateActions.forEach((item) => {
+          let requestParam = new RequestEntity.RequestParam(requestHead, {template: item.template});
+          RequstApi.sendHttpRequest(requestParam)
+            .then(eventResponse => {
+              if (eventResponse.status === 200) {
+                vm.$store.dispatch('fillModule', {'event': eventResponse});
+              }
+            })
+            .catch(eventResponse => {
+              alert(eventResponse.message);
+            });
+        });
       }
     }
   }

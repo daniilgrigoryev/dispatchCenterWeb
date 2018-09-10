@@ -202,7 +202,6 @@
           let levelsCount = {};
           let rulesData = {};
           option.color = [];
-          let levelColors = option.color;
           this.alerts = selectedAlarms.length > 0 ? selectedAlarms.length : alarms.length;
           this.objectsAlert = chartData.selectObj.length > 0 ? chartData.selectObj.length : chartData.objects.length;
 
@@ -212,32 +211,11 @@
             if (funcUtils.isUndefined(rule)) {
               rulesData[rules[m].id] = {
                 id: rules[m].id,
+                level: rules[m].level,
                 note: rules[m].note,
                 count: 0,
                 alarmLastTime: null
               };
-              switch (rules[m].level) {
-                case 1: {
-                  levelColors.push('#00dbff');
-                  break;
-                }
-                case 2: {
-                  levelColors.push('#8979b2');
-                  break;
-                }
-                case 3: {
-                  levelColors.push('#936152');
-                  break;
-                }
-                case 4: {
-                  levelColors.push('#897213');
-                  break;
-                }
-                case 5: {
-                  levelColors.push('#237e22');
-                  break;
-                }
-              }
             }
           }
           for (let n = 0; n < alarms.length; n++) {
@@ -250,16 +228,36 @@
               ruleData.alarmLastTime = alarms[n].alarmTime;
             }
           }
-          let k = 0;
           for (let prop in rulesData) {
             if (rulesData.hasOwnProperty(prop) && rulesData[prop].count > 0) {
               let rule = rulesData[prop];
+              switch (rule.level) {
+                case 1: {
+                  option.color.push('#00dbff');
+                  break;
+                }
+                case 2: {
+                  option.color.push('#8979b2');
+                  break;
+                }
+                case 3: {
+                  option.color.push('#936152');
+                  break;
+                }
+                case 4: {
+                  option.color.push('#897213');
+                  break;
+                }
+                case 5: {
+                  option.color.push('#237e22');
+                  break;
+                }
+              }
               option.series[0].data.push({
                 'value': rule.count,
                 'name': rule.note
               });
             }
-            k++;
           }
           // Уровни
           for (let i = 0; i < alarms.length; i++) {
@@ -269,32 +267,32 @@
             let name = funcUtils.lookupValue('levelNames', alarms[i].level).label;
             switch (alarms[i].level) {
               case 1: {
-                if (!levelColors.includes('#3a5b6d')) {
-                  levelColors.push('#3a5b6d');
+                if (!option.color.includes('#3a5b6d')) {
+                  option.color.push('#3a5b6d');
                 }
                 break;
               }
               case 2: {
-                if (!levelColors.includes('#0fac56')) {
-                  levelColors.push('#0fac56');
+                if (!option.color.includes('#0fac56')) {
+                  option.color.push('#0fac56');
                 }
                 break;
               }
               case 3: {
-                if (!levelColors.includes('#d89a0f')) {
-                  levelColors.push('#d89a0f');
+                if (!option.color.includes('#d89a0f')) {
+                  option.color.push('#d89a0f');
                 }
                 break;
               }
               case 4: {
-                if (!levelColors.includes('#d85803')) {
-                  levelColors.push('#d85803');
+                if (!option.color.includes('#d85803')) {
+                  option.color.push('#d85803');
                 }
                 break;
               }
               case 5: {
-                if (!levelColors.includes('#bc1b0a')) {
-                  levelColors.push('#bc1b0a');
+                if (!option.color.includes('#bc1b0a')) {
+                  option.color.push('#bc1b0a');
                 }
                 break;
               }
