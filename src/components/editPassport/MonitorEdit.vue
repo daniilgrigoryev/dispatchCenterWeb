@@ -25,11 +25,11 @@
 
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-reload-white.svg" alt="">
+              <img src="../../assets/img/icon-reload-white.svg" alt="">
             </el-button>
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-alarmclock-white.svg" alt="">
+              <img src="../../assets/img/icon-alarmclock-white.svg" alt="">
             </el-button>
 
             <el-popover
@@ -44,7 +44,7 @@
                 <el-button type="primary" size="mini" @click="visible2 = false">confirm</el-button>
               </div>
               <el-button slot="reference" size="mini" class="dc-button-icon-medium" title="Действие">
-                <img src="../assets/img/icon-burger-large-white.svg" alt="">
+                <img src="../../assets/img/icon-burger-large-white.svg" alt="">
               </el-button>
             </el-popover>
           </el-col>
@@ -54,42 +54,40 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <table>
-          <thead>
-            <tr>
-              <td style="padding: 5px;">Имя модели</td>
-              <td style="padding: 5px;">Название правила</td>
-              <td style="padding: 5px;">Имя типа объекта</td>
-              <td style="padding: 5px;">Описание</td>
-              <td style="padding: 5px;"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="monitor in monitors">
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.modelName }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.name }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
-              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
-              <td style="padding: 5px; border: 1px solid grey">
-                <el-button v-on:click="editMonitor(monitor.id)" round type="primary">Редактировать монитор</el-button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style="display: flex; align-items: center; margin-top: 25px;">
+        <div>
+          <div>Название правила</div>
+          <el-input placeholder="Please input" v-model="monitor.name"></el-input>
+        </div>
+        <div>
+          <div>Время запуска в cron</div>
+          <el-input placeholder="Please input" v-model="monitor.cron"></el-input>
+        </div>
+        <div>
+          <div>Описание</div>
+          <el-input placeholder="Please input" v-model="monitor.note"></el-input>
+        </div>
+        <div style="display: flex; align-items: center;">
           <div>Модель</div>
-          <el-select style="min-width: 500px" v-model="modelId" placeholder="Select">
+          <el-select style="min-width: 500px" v-model="status" placeholder="Select">
             <el-option label=" " :value="null"></el-option>
             <el-option
-              v-for="item in modelDict"
-              :key="item.id"
-              :label="item.description"
-              :value="item.id">
+              v-for="item in statusNames"
+              :key="item.label"
+              :label="item.label"
+              :value="item.value">
             </el-option>
           </el-select>
-          <el-button :disabled="null === modelId" v-on:click="createNewMonitor()" round type="primary">Создать новый монитор</el-button>
         </div>
+        <div v-if="monitor.ruleData !== undefined" >
+          <div v-for="(value, key) in monitor.ruleData.list">
+            <label>{{ key }}</label>
+            <el-input v-model="monitor.ruleData.list[key]" />
+          </div>
+        </div>
+
+        <el-button v-on:click="saveMonitor()" round type="primary">Сохранить</el-button>
+        <el-button v-on:click="deleteMonitor()" round type="primary">Удалить</el-button>
+        <el-button @click="getSerachView()" round type="primary">Поиск</el-button>
       </el-main>
       <!--/Область контента-->
     </el-container>
@@ -97,181 +95,106 @@
 </template>
 
 <script>
-  import * as RequestEntity from './../assets/js/api/requestEntity';
-  import {RequstApi} from './../assets/js/api/requestApi';
-  import * as funcUtils from "./../assets/js/utils/funcUtils";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
+  import * as ConstantUtils from "../../assets/js/utils/constantUtils";
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-  import PageAside from "./SharedWidgets/PageAside";
+  import PageAside from "../SharedWidgets/PageAside";
 
   export default {
-    name: "MonitorReestr",
+    name: "MonitorEdit",
     components: {
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
     },
-    mounted: function () {
+    beforeCreate: function () {
       let wid = sessionStorage.getItem('wid');
-      let monitorReestr = funcUtils.getfromLocalStorage('monitorReestr');
-      if (funcUtils.isNull(monitorReestr)) {
-        monitorReestr = {
-          monitorReestrView: null,
-          monitorEdit: null
-        };
-        funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
+      let componentsRoute = funcUtils.getFromSessionStorage(wid);
+      let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+      this.$store.dispatch('monitorEditSetCid', currentComponent.cid);
+      let params = this.$route.params;
+      let method = 'getNewMonitorRule';
+      if (funcUtils.isNotEmpty(params.id)) {
+        method = 'getMonitorRule';
+      } else if (funcUtils.isEmpty(params.id) && funcUtils.isEmpty(params.modelId)) {
+        method = 'restore';
+        params = null;
       }
-      let getData = (methodName) => {
-        let cid = monitorReestr.monitorReestrView;
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.monitorReestr.bean, methodName);
-        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
-        RequstApi.sendHttpRequest(requestParam)
-          .then(eventResponse => {
-            if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'event': eventResponse});
-            }
-          })
-          .catch(eventResponse => {
-            alert(eventResponse.message);
-          });
-      };
-      if (funcUtils.isNull(monitorReestr.monitorReestrView)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorReestr.bean, null);
-        let requestParam = new RequestEntity.RequestParam(requestHead, null);
-        RequstApi.sendHttpRequest(requestParam)
-          .then(eventResponse => {
-            if (eventResponse.status === 200) {
-              let data = eventResponse.response;
-              if (data.length > 0) {
-                let dataJson = JSON.parse(data);
-                let respData = dataJson.data;
-                let respError = dataJson.error;
-                if (!funcUtils.isNull(respData)) {
-                  if (dataJson.method === 'addCID') {
-                    monitorReestr.monitorReestrView = respData.cid;
-                    this.$store.dispatch('monitorReestrSetCid', respData.cid);
-                    funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
-                    getData('getData');
-                  }
-                } else {
-                  if (!funcUtils.isNull(respError)) {
-                    alert(respError.errorMsg);
-                  }
-                }
-              }
-            }
-          })
-          .catch(eventResponse => {
-            alert(eventResponse.message);
-          });
-      } else {
-        getData('restore');
-      }
-
-      if (funcUtils.isNull(monitorReestr.monitorEdit)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorEdit.bean, null);
-        let requestParam = new RequestEntity.RequestParam(requestHead, null);
-        RequstApi.sendHttpRequest(requestParam)
-          .then(eventResponse => {
-            if (eventResponse.status === 200) {
-              let data = eventResponse.response;
-              if (data.length > 0) {
-                let dataJson = JSON.parse(data);
-                let respData = dataJson.data;
-                let respError = dataJson.error;
-                if (!funcUtils.isNull(respData)) {
-                  if (dataJson.method === 'addCID') {
-                    monitorReestr.monitorEdit = respData.cid;
-                    this.$store.dispatch('monitorEditSetCid', respData.cid);
-                    funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
-                  }
-                } else {
-                  if (!funcUtils.isNull(respError)) {
-                    alert(respError.errorMsg);
-                  }
-                }
-              }
-            }
-          })
-          .catch(eventResponse => {
-            alert(eventResponse.message);
-          });
-      }
-
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getModelDict');
-      let requestParam = new RequestEntity.RequestParam(requestHead, null);
+      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorEdit.bean, method);
+      let requestParam = new RequestEntity.RequestParam(requestHead, params);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
           if (eventResponse.status === 200) {
-            let data = eventResponse.response;
-            if (data.length > 0) {
-              let dataJson = JSON.parse(data);
-              let respData = dataJson.data;
-              let respError = dataJson.error;
-              if (!funcUtils.isNull(respData)) {
-                this.modelDict = respData;
-              } else {
-                if (!funcUtils.isNull(respError)) {
-                  alert(respError.errorMsg);
-                }
-              }
-            }
+            this.$store.dispatch('fillModule', {'event': eventResponse});
           }
         })
         .catch(eventResponse => {
           alert(eventResponse.message);
         });
-
-      let self = this;
-      this.$store.watch(this.$store.getters.monitorReestrGetCommand, state => {
-        self.updateOnCommand(state);
-      })
     },
     data() {
       return {
-        modelId: null,
-        modelDict: null,
+        status: null,
+        statusNames: null,
         headerSwitch: false
       }
     },
     computed: {
-      monitors: function() {
-        let res;
-        let data = this.$store.state.monitorReestr.data;
+      monitor: function() {
+        let res = {};
+        let data = this.$store.state.monitorEdit.data;
         if (data) {
-          res = data.data;
+          this.status = data.status;
+          this.statusNames = ConstantUtils.statusNames;
+          res = data;
         }
         return res;
       }
     },
     methods: {
-      updateOnCommand: function (resp) {
+      saveMonitor: function () {
+        let res = this.monitor;
+        res.status = this.status;
         let wid = sessionStorage.getItem('wid');
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.monitorReestr.bean, 'restore');
-        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorEdit.bean, 'saveMonitorRule');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {data: res});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$store.dispatch('fillModule', {'event': eventResponse});
+              this.$root.getMonitorReestr();
             }
           })
           .catch(eventResponse => {
             alert(eventResponse.message);
           });
       },
-      editMonitor: function (ruleId) {
-        let params = {
-          'id': ruleId
-        };
-        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
-        });
+      deleteMonitor: function () {
+        let wid = sessionStorage.getItem('wid');
+        let componentsRoute = funcUtils.getFromSessionStorage(wid);
+        let currentComponent = funcUtils.getCurrentComponent(componentsRoute);
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, currentComponent.cid, this.$store.state.monitorEdit.bean, 'deleteMonitorRule');
+        let requestParam = new RequestEntity.RequestParam(requestHead, null);
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              let response = JSON.parse(eventResponse.response);
+              if (response.data == true) {
+                this.$root.getMonitorReestr();
+              }
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
       },
-      createNewMonitor: function () {
-        let params = {
-          'modelId': this.modelId
-        };
-        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
+      getSerachView: function () {
+        let vm = this;
+        funcUtils.getNextComponent(this.$store.state.searchView.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.searchView.routeName, {searchItems: vm.monitor.objectFilter});
         });
       }
     }
@@ -401,7 +324,7 @@
 
     .dc-main-aside__logo {
       height: 64px;
-      background: #7e8c91 url("../assets/img/logo-menu.svg") no-repeat center;
+      background: #7e8c91 url("../../assets/img/logo-menu.svg") no-repeat center;
       background-size: 42px;
     }
 

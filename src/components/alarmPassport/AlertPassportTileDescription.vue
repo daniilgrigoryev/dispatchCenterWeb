@@ -139,7 +139,7 @@
           if (data.state === 3) {
             if (funcUtils.isNotEmpty(actions)) {
               let max = actions.reduce((max, action) => action.lastOperTime < max ? action.lastOperTime : max, actions[0].lastOperTime);
-              res.alarmLastTime = funcUtils.formatDateTime(max, 'DD.MM.YYYY HH:mm');
+              res.alarmLastTime = funcUtils.parseDateTime(max, 'DD.MM.YYYY HH:mm');
             }
           } else {
             res.alarmLastTime = funcUtils.lookupValue('stateNames', data.state).label;

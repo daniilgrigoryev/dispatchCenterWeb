@@ -35,6 +35,8 @@
   import mapboxgl from 'mapbox-gl'
   import supercluster from 'supercluster'
   import iconCamera from '../../assets/img/map-cam-b.svg'
+  import * as ConstantUtils from './../../assets/js/utils/constantUtils';
+
 
   export default {
     name: "object-passport-map",
@@ -53,7 +55,7 @@
         this.map = new mapboxgl.Map(
           {
             container: 'object-map',
-            style: 'http://172.20.255.199:8080/facecontrol-api/map/styles/facecontrol-dark/style.json?optimize=true',
+            style: ConstantUtils.MAP_STYLE,
             center: [data.gps_y, data.gps_x],
             zoom: 15,
             hash: false,
@@ -75,6 +77,9 @@
               "data": {
                 "type": "FeatureCollection",
                 "features": [{
+                  'properties': {
+                    "coordinates": [data.gps_y, data.gps_x]
+                  },
                   "type": "Feature",
                   "geometry": {
                     "type": "Point",
@@ -88,9 +93,26 @@
               "icon-size": 0.5
             }
           });
-
+        });
+        let vm = this;
+        map.on('moveend', function () {
+          vm.map.eachLayer(function (layer) {
+            map.removeLayer(layer);
+          });
+          let features = vm.map.queryRenderedFeatures({layers:['points']});
+          vm.isVisible(JSON.parse(features[0].properties.coordinates));
         });
       },
+      // проверяет, входит ли заданная точка в область видимо экрана на карте
+      isVisible: function (coords, leftBottomCoords, topRightCoords) {
+        let southWestCoords = leftBottomCoords || this.map.getBounds().getSouthWest();
+        let northEastCoords = topRightCoords || this.map.getBounds().getNorthEast();
+        return coords[0] > southWestCoords.lng &&
+          coords[0] < northEastCoords.lng &&
+          coords[1] > southWestCoords.lat &&
+          coords[1] < northEastCoords.lat;
+
+      }
     },
     mounted: function () {
       let vm = this;

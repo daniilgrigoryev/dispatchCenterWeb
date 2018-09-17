@@ -269,9 +269,15 @@ export function clearAll() {
   localStorage.removeItem('lastActive');
   localStorage.removeItem('alarmRuleReestr');
   localStorage.removeItem('monitorReestr');
+  localStorage.removeItem('alarmReestr');
+  localStorage.removeItem('cameraReestr');
   addToSessionStorage('path', [{routeName: 'Authorization', current: true}]);
 }
 
-export function formatDateTime(dateTime, format) {
+export function parseDateTime(dateTime, format) {
   return moment(dateTime).format(format);
+}
+
+export function formatDateTime(dateTime) {
+  return moment(dateTime, 'dd.MM.yyyy HH:mm').toString();
 }

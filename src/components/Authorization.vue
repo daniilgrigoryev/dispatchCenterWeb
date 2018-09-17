@@ -38,8 +38,9 @@
     methods: {
       authorize: function () {
         if (this.userName !== '' && this.password !== '') {
+          let vm = this;
           let wid = sessionStorage.getItem('wid');
-          let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, this.userName, null, this.password);
+          let loginParams = new RequestEntity.LoginParams(new Fingerprint().get(), funcUtils.webGlId(), navigator.platform, navigator.userAgent, null, vm.userName, null, vm.password);
           let requestHead = new RequestEntity.RequestHead(null, wid, null, null, 'login');
           let requestParam = new RequestEntity.RequestParam(requestHead, loginParams);
           (async () => {
@@ -59,7 +60,7 @@
                       if (funcUtils.isNull(sessionStorage.getItem(wid))) {
                         sessionStorage.setItem(wid, '[]');
                       }
-                      this.$root.activateTimer();
+                      vm.$root.activateTimer();
                     }
                   } else {
                     alert(respError.errorMsg);
@@ -68,8 +69,8 @@
               }
               if (funcUtils.isNotEmpty(localStorage.getItem('sid'))) {
                 let temp = new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, null, 'addWID'), null);
-                RequstApi.sendSocketRequest(temp, this);
-                funcUtils.getNextPage(this.$router, this.$store.state.monitorDict.routeName);
+                RequstApi.sendSocketRequest(temp, vm);
+                vm.$root.getCameraOrMapReestr(true);
               }
             } catch (e) {
               alert(e.message);

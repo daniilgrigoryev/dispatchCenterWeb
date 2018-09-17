@@ -10,7 +10,7 @@
           <el-col
             :span="12"
             class="flex-parent flex-parent--center-cross">
-            <h1>Список правил тревоги</h1>
+            <h1>Список мониторов</h1>
             <!--<div class="dc-widget-item__caption" style="margin-left: 10px;">год 6 мес. 24 дня 6ч 11м</div>-->
           </el-col>
           <el-col :span="4" class="flex-parent flex-parent--end-main flex-parent--center-cross">
@@ -25,11 +25,11 @@
 
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-reload-white.svg" alt="">
+              <img src="../../assets/img/icon-reload-white.svg" alt="">
             </el-button>
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-alarmclock-white.svg" alt="">
+              <img src="../../assets/img/icon-alarmclock-white.svg" alt="">
             </el-button>
 
             <el-popover
@@ -44,7 +44,7 @@
                 <el-button type="primary" size="mini" @click="visible2 = false">confirm</el-button>
               </div>
               <el-button slot="reference" size="mini" class="dc-button-icon-medium" title="Действие">
-                <img src="../assets/img/icon-burger-large-white.svg" alt="">
+                <img src="../../assets/img/icon-burger-large-white.svg" alt="">
               </el-button>
             </el-popover>
           </el-col>
@@ -54,45 +54,41 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <!--<el-date-picker v-model="dateBeg" format="dd.MM.yyyy" type="date" placeholder="Pick a start">
-             </el-date-picker>
-             <el-date-picker v-model="dateEnd" format="dd.MM.yyyy" type="date" placeholder="Pick a end">
-       </el-date-picker>-->
         <table>
           <thead>
-          <tr>
-            <td style="padding: 5px;">Тип источника метрики</td>
-            <td style="padding: 5px;">Уровень поднимаемой тревоги</td>
-            <td style="padding: 5px;">Статус</td>
-            <td style="padding: 5px;">Описание</td>
-            <td style="padding: 5px;"></td>
-          </tr>
+            <tr>
+              <td style="padding: 5px;">Имя модели</td>
+              <td style="padding: 5px;">Название правила</td>
+              <td style="padding: 5px;">Имя типа объекта</td>
+              <td style="padding: 5px;">Описание</td>
+              <td style="padding: 5px;"></td>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="alaramRule in alarmRules">
-            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.sourceTypeName }}</td>
-            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.levelName }}</td>
-            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.statusName }}</td>
-            <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ alaramRule.note }}</td>
-            <td style="padding: 5px; border: 1px solid grey">
-              <el-button v-on:click="editAlarmRule(alaramRule.id)" round type="primary">Редактировать правило</el-button>
-            </td>
-          </tr>
+            <tr v-for="monitor in monitors">
+              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.modelName }}</td>
+              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.name }}</td>
+              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
+              <td style="color: #fff; padding: 5px; border: 1px solid grey">{{ monitor.objectTypeName }}</td>
+              <td style="padding: 5px; border: 1px solid grey">
+                <el-button v-on:click="editMonitor(monitor.id)" round type="primary">Редактировать монитор</el-button>
+              </td>
+            </tr>
           </tbody>
         </table>
 
         <div style="display: flex; align-items: center; margin-top: 25px;">
-          <div>Тип метрики</div>
-          <el-select style="min-width: 500px" v-model="sourceId" placeholder="Select">
+          <div>Модель</div>
+          <el-select style="min-width: 500px" v-model="modelId" placeholder="Select">
             <el-option label=" " :value="null"></el-option>
             <el-option
-              v-for="item in monitorDict"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in modelDict"
+              :key="item.id"
+              :label="item.description"
+              :value="item.id">
             </el-option>
           </el-select>
-          <el-button :disabled="null === sourceId" v-on:click="createNewAlarmRule()" round type="primary">Создать новое правило</el-button>
+          <el-button :disabled="null === modelId" v-on:click="createNewMonitor()" round type="primary">Создать новый монитор</el-button>
         </div>
       </el-main>
       <!--/Область контента-->
@@ -101,32 +97,31 @@
 </template>
 
 <script>
-  import * as RequestEntity from './../assets/js/api/requestEntity';
-  import {RequstApi} from './../assets/js/api/requestApi';
-  import * as funcUtils from "./../assets/js/utils/funcUtils";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-  import PageAside from "./SharedWidgets/PageAside";
+  import PageAside from "../SharedWidgets/PageAside";
 
   export default {
-    name: "AlarmRuleReestr",
+    name: "MonitorReestr",
     components: {
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
     },
-    beforeCreate: function () {
+    mounted: function () {
       let wid = sessionStorage.getItem('wid');
-      let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
-      if (funcUtils.isNull(alarmRuleReestr)) {
-        alarmRuleReestr = {
-          alarmRuleReestrView: null,
-          alarmRuleEdit: null
+      let monitorReestr = funcUtils.getfromLocalStorage('monitorReestr');
+      if (funcUtils.isNull(monitorReestr)) {
+        monitorReestr = {
+          monitorReestrView: null
         };
-        funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
+        funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
       }
       let getData = (methodName) => {
-        let cid = alarmRuleReestr.alarmRuleReestrView;
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.alarmRuleReestr.bean, methodName);
+        let cid = monitorReestr.monitorReestrView;
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.monitorReestr.bean, methodName);
         let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -138,8 +133,8 @@
             alert(eventResponse.message);
           });
       };
-      if (funcUtils.isNull(alarmRuleReestr.alarmRuleReestrView)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.alarmRuleReestr.bean, null);
+      if (funcUtils.isNull(monitorReestr.monitorReestrView)) {
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.monitorReestr.bean, null);
         let requestParam = new RequestEntity.RequestParam(requestHead, null);
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
@@ -151,9 +146,9 @@
                 let respError = dataJson.error;
                 if (!funcUtils.isNull(respData)) {
                   if (dataJson.method === 'addCID') {
-                    alarmRuleReestr.alarmRuleReestrView = respData.cid;
-                    this.$store.dispatch('alarmRuleReestrSetCid', respData.cid);
-                    funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
+                    monitorReestr.monitorReestrView = respData.cid;
+                    this.$store.dispatch('monitorReestrSetCid', respData.cid);
+                    funcUtils.addToLocalStorage('monitorReestr', monitorReestr);
                     getData('getData');
                   }
                 } else {
@@ -171,37 +166,7 @@
         getData('restore');
       }
 
-      if (funcUtils.isNull(alarmRuleReestr.alarmRuleEdit)) {
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.alarmRuleEdit.bean, null);
-        let requestParam = new RequestEntity.RequestParam(requestHead, null);
-        RequstApi.sendHttpRequest(requestParam)
-          .then(eventResponse => {
-            if (eventResponse.status === 200) {
-              let data = eventResponse.response;
-              if (data.length > 0) {
-                let dataJson = JSON.parse(data);
-                let respData = dataJson.data;
-                let respError = dataJson.error;
-                if (!funcUtils.isNull(respData)) {
-                  if (dataJson.method === 'addCID') {
-                    this.$store.dispatch('alarmRuleEditSetCid', respData.cid);
-                    alarmRuleReestr.alarmRuleEdit = respData.cid;
-                    funcUtils.addToLocalStorage('alarmRuleReestr', alarmRuleReestr);
-                  }
-                } else {
-                  if (!funcUtils.isNull(respError)) {
-                    alert(respError.errorMsg);
-                  }
-                }
-              }
-            }
-          })
-          .catch(eventResponse => {
-            alert(eventResponse.message);
-          });
-      }
-
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getMonitorDict');
+      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getModelDict');
       let requestParam = new RequestEntity.RequestParam(requestHead, null);
       RequstApi.sendHttpRequest(requestParam)
         .then(eventResponse => {
@@ -212,13 +177,7 @@
               let respData = dataJson.data;
               let respError = dataJson.error;
               if (!funcUtils.isNull(respData)) {
-                this.monitorDict = [];
-                respData.forEach((monitor) => {
-                  this.monitorDict.push({
-                    label: monitor.name,
-                    value: monitor.id
-                  });
-                });
+                this.modelDict = respData;
               } else {
                 if (!funcUtils.isNull(respError)) {
                   alert(respError.errorMsg);
@@ -230,49 +189,58 @@
         .catch(eventResponse => {
           alert(eventResponse.message);
         });
+
+      let self = this;
+      this.$store.watch(this.$store.getters.monitorReestrGetCommand, state => {
+        self.updateOnCommand(state);
+      })
     },
     data() {
       return {
-        sourceId: null,
-        monitorDict: null,
+        modelId: null,
+        modelDict: null,
         headerSwitch: false
       }
     },
     computed: {
-      alarmRules: function () {
+      monitors: function() {
         let res;
-        let data = this.$store.state.alarmRuleReestr.data;
+        let data = this.$store.state.monitorReestr.data;
         if (data) {
-          let alarmDicts = data.data;
-          if (funcUtils.isNotEmpty(alarmDicts)) {
-            alarmDicts.forEach((dict) => {
-              dict.sourceTypeName = funcUtils.lookupValue('sourceTypeNames', dict.sourceType).label;
-              dict.levelName = funcUtils.lookupValue('levelNames', dict.level).label;
-              dict.statusName = funcUtils.lookupValue('statusNames', dict.status).label;
-            });
-          }
           res = data.data;
         }
         return res;
       }
     },
     methods: {
-      editAlarmRule: function (alaramRuleId) {
+      updateOnCommand: function (resp) {
+        let wid = sessionStorage.getItem('wid');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.monitorReestr.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
+      editMonitor: function (ruleId) {
         let params = {
-          'id': alaramRuleId
+          'id': ruleId
         };
-        funcUtils.getNextComponent(this.$store.state.alarmRuleEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleEdit.routeName, params);
+        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
         });
       },
-      createNewAlarmRule: function () {
+      createNewMonitor: function () {
         let params = {
-          'executerId': 1,
-          'sourceType': 1,
-          'sourceId': this.sourceId
+          'modelId': this.modelId
         };
-        funcUtils.getNextComponent(this.$store.state.alarmRuleEdit.bean, () => {
-          funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleEdit.routeName, params);
+        funcUtils.getNextComponent(this.$store.state.monitorEdit.bean, () => {
+          funcUtils.getNextPage(this.$router, this.$store.state.monitorEdit.routeName, params);
         });
       }
     }
@@ -365,7 +333,7 @@
         align-items: center;
         background: #28282e;
 
-        .dc-button-icon-small:last-child {
+        .dc-button-icon-small:last-child  {
           margin-left: 0;
           margin-top: 5px;
         }
@@ -402,7 +370,7 @@
 
     .dc-main-aside__logo {
       height: 64px;
-      background: #7e8c91 url("../assets/img/logo-menu.svg") no-repeat center;
+      background: #7e8c91 url("../../assets/img/logo-menu.svg") no-repeat center;
       background-size: 42px;
     }
 

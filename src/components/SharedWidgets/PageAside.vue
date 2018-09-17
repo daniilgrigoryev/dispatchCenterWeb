@@ -12,7 +12,10 @@
         <el-menu-item-group>
           <el-menu-item index="1-1" v-on:click="getMonitorReestr()">Реестр мониторов</el-menu-item>
           <el-menu-item index="1-2" v-on:click="getAlarmRuleReestr()">Реестр правил тревоги</el-menu-item>
-          <el-menu-item index="1-2" v-on:click="getMonitorDict()">Список мониторов</el-menu-item>
+          <el-menu-item index="1-3" v-on:click="getAlarmReestr()">Реестр тревог</el-menu-item>
+          <el-menu-item index="1-4" v-on:click="getCameraOrMapReestr(false)">Реестр камер</el-menu-item>
+          <el-menu-item index="1-5" v-on:click="getCameraOrMapReestr(true)">Карта</el-menu-item>
+          <el-menu-item index="1-6" v-on:click="getMonitorDict()">Список мониторов</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
       <el-submenu index="2">
@@ -84,6 +87,12 @@
       },
       getMonitorReestr: function () {
         this.$root.getMonitorReestr();
+      },
+      getAlarmReestr: function () {
+        this.$root.getAlarmReestr();
+      },
+      getCameraOrMapReestr: function (isMap) {
+        this.$root.getCameraOrMapReestr(isMap);
       },
       getAlarmRuleReestr: function () {
         this.$root.getAlarmRuleReestr();

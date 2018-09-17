@@ -1,5 +1,8 @@
 export const HTTP_URL='http://172.20.255.54:8888/alarmWS/sinc';
 export const WS_URL='ws://172.20.255.54:8888/alarmWS/socket/alarm';
+export const MAP_STYLE='http://172.20.255.199:8080/facecontrol-api/map/styles/facecontrol-dark/style.json?optimize=true';
+export const MAP_REESTR='MapReestr';
+export const CAMERA_REESTR='CameraReestr';
 export const levelNames=[
   {
     label: 'Незаметный',

@@ -5,10 +5,14 @@ import MonitorDict from '../components/MonitorDict'
 import MonitorViewData from '../components/metricaPassport/MonitorViewData'
 import AlarmViewData from '../components/alarmPassport/AlarmViewData'
 import ObjectViewData from '../components/objectPassport/ObjectViewData'
-import MonitorReestr from '../components/MonitorReestr'
-import MonitorEdit from '../components/MonitorEdit'
-import AlarmRuleReestr from '../components/AlarmRuleReestr'
-import AlarmRuleEdit from '../components/AlarmRuleEdit'
+import MonitorReestr from '../components/reestrPassport/MonitorReestr'
+import MonitorEdit from '../components/editPassport/MonitorEdit'
+import SearchView from '../components/SearchView'
+import AlarmRuleReestr from '../components/reestrPassport/AlarmRuleReestr'
+import AlarmReestr from '../components/reestrPassport/AlarmReestr'
+import CameraReestr from '../components/reestrPassport/CameraReestr'
+import MapReestr from '../components/reestrPassport/MapReestr'
+import AlarmRuleEdit from '../components/editPassport/AlarmRuleEdit'
 import PageNotFound from '../components/404'
 import * as funcUtils from "./../assets/js/utils/funcUtils";
 
@@ -62,9 +66,29 @@ const router = new Router({
       component: AlarmRuleReestr
     },
     {
+      path: '/alarmReestr',
+      name: 'AlarmReestr',
+      component: AlarmReestr
+    },
+    {
+      path: '/cameraReestr',
+      name: 'CameraReestr',
+      component: CameraReestr
+    },
+    {
+      path: '/mapReestr',
+      name: 'MapReestr',
+      component: MapReestr
+    },
+    {
       path: '/alarmRuleEdit',
       name: 'AlarmRuleEdit',
       component: AlarmRuleEdit
+    },
+    {
+      path: '/searchView',
+      name: 'SearchView',
+      component: SearchView
     },
     {
       path: '/404',

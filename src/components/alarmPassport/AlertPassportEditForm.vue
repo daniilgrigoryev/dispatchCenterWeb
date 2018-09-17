@@ -85,7 +85,6 @@
           });
       });
       bus.$on('startActionTemplate', function () {
-        debugger;
         this.store();
         let wid = sessionStorage.getItem('wid');
         let componentsRoute = funcUtils.getFromSessionStorage(wid);

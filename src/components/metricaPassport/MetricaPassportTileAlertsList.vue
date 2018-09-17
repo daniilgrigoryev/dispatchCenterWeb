@@ -80,7 +80,7 @@
                          @click="setActiveAlarm(alarm)" type="checkbox"/>
                 </div>
                 <div class='flex-child'>
-                  <div class="dc-alerts-list-item__name">
+                  <div @click="getAlarmPassport(alarm.id)" class="dc-alerts-list-item__name">
                     <span>камера</span> ID 00-00-00000-0
                   </div>
                   <div class="dc-alerts-list-item__note">{{alarm.note}}</div>
@@ -96,13 +96,6 @@
       </el-carousel-item>
       <!--/Развернутый алерт-->
     </el-carousel>
-
-
-
-
-
-
-
 
     <!--/Хедер тайла-->
 

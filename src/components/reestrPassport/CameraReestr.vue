@@ -25,11 +25,11 @@
 
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-reload-white.svg" alt="">
+              <img src="../../assets/img/icon-reload-white.svg" alt="">
             </el-button>
 
             <el-button size="mini" class="dc-button-icon-medium" title="Действие">
-              <img src="../assets/img/icon-alarmclock-white.svg" alt="">
+              <img src="../../assets/img/icon-alarmclock-white.svg" alt="">
             </el-button>
 
             <el-popover
@@ -44,7 +44,7 @@
                 <el-button type="primary" size="mini" @click="visible2 = false">confirm</el-button>
               </div>
               <el-button slot="reference" size="mini" class="dc-button-icon-medium" title="Действие">
-                <img src="../assets/img/icon-burger-large-white.svg" alt="">
+                <img src="../../assets/img/icon-burger-large-white.svg" alt="">
               </el-button>
             </el-popover>
           </el-col>
@@ -54,72 +54,16 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <div>
-          <div>Шаблон действия на тревогу</div>
-          <el-select style="min-width: 500px" v-model="templateId" placeholder="Select">
-            <el-option label=" " :value="null"></el-option>
-            <el-option
-              v-for="alarmTemplate in alarmTemplates"
-              :key="alarmTemplate.id"
-              :label="alarmTemplate.name"
-              :value="alarmTemplate.id">
-            </el-option>
-          </el-select>
-        </div>
-        <div>
-          <div>Уровень поднимаемой тревоги</div>
-          <el-select style="min-width: 500px" v-model="levelId" placeholder="Select">
-            <el-option label=" " :value="null"></el-option>
-            <el-option
-              v-for="level in levels"
-              :key="level.value"
-              :label="level.label"
-              :value="level.value">
-            </el-option>
-          </el-select>
-        </div>
-        <div>
-          <div>Скрипт для проверки на наличие тревоги</div>
-          <el-input placeholder="Please input" v-model="alarmRule.raiseRuleData"></el-input>
-        </div>
-        <div>
-          <div>Скрипт для отмены поднятой тревоги</div>
-          <el-input placeholder="Please input" v-model="alarmRule.cancelRuleData"></el-input>
-        </div>
-        <div>
-          <div>Статус</div>
-          <el-select style="min-width: 500px" v-model="statusId" placeholder="Select">
-            <el-option label=" " :value="null"></el-option>
-            <el-option
-              v-for="status in statuses"
-              :key="status.value"
-              :label="status.label"
-              :value="status.value">
-            </el-option>
-          </el-select>
-        </div>
-        <div>
-          <div>Комментарий</div>
-          <el-input placeholder="Please input" v-model="alarmRule.note"></el-input>
-        </div>
-        <div>
-          <div>Признак использования в условии аггрегированных значений из предыдущих сборов метрики (+)</div>
-          <el-checkbox v-model="alarmRule.aggFlag">Check</el-checkbox>
-        </div>
-        <div>
-          <div>Аггрегатная функция применяемая для каждого поля модели</div>
-          <el-input placeholder="Please input" v-model="alarmRule.aggFunc"></el-input>
-        </div>
-        <div>
-          <div>Смещение на количество сборов метрики относительного текущего сбора</div>
-          <el-input-number placeholder="Please input" v-model="alarmRule.aggShift"></el-input-number>
-        </div>
-        <div>
-          <div>Количество сборов метрики участвующее в аггрегировании</div>
-          <el-input-number placeholder="Please input" v-model="alarmRule.aggDistance"></el-input-number>
-        </div>
-        <el-button v-on:click="saveAlarmRule()" round type="primary">Сохранить</el-button>
-        <el-button v-on:click="deleteAlarmRule()" round type="primary">Удалить</el-button>
+        <table>
+          <thead>
+
+          </thead>
+          <tbody>
+            <tr v-for="camera in cameras">
+
+            </tr>
+          </tbody>
+        </table>
       </el-main>
       <!--/Область контента-->
     </el-container>
@@ -127,130 +71,98 @@
 </template>
 
 <script>
-  import * as RequestEntity from './../assets/js/api/requestEntity';
-  import {RequstApi} from './../assets/js/api/requestApi';
-  import * as funcUtils from "./../assets/js/utils/funcUtils";
-  import * as ConstantUtils from "./../assets/js/utils/constantUtils";
+  import * as RequestEntity from '../../assets/js/api/requestEntity';
+  import {RequstApi} from '../../assets/js/api/requestApi';
+  import * as funcUtils from "../../assets/js/utils/funcUtils";
   import * as VueGridLayout from "vue-grid-layout" // https://github.com/jbaysolutions/vue-grid-layout
-  import PageAside from "./SharedWidgets/PageAside";
+  import PageAside from "../SharedWidgets/PageAside";
+  import cameraReestr from "~/store/modules/cameraReestr";
 
   export default {
-    name: "AlarmRuleEdit",
+    name: "CameraReestr",
     components: {
       PageAside,
       GridLayout: VueGridLayout.GridLayout,
       GridItem: VueGridLayout.GridItem,
     },
     mounted: function () {
-      let wid = sessionStorage.getItem('wid');
-      let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
-      let path = funcUtils.getFromSessionStorage('path');
-      let currentPage = funcUtils.getCurrentPage(path);
-      let method = 'getNewAlarmRule';
-      this.params = currentPage.params;
-      if (funcUtils.isNotEmpty(this.params.id)) {
-        method = 'getAlarmRule';
-      }
-      let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, method);
-      let requestParam = new RequestEntity.RequestParam(requestHead, this.params);
-      /*(async () => {
-        try {
-          let eventResponse = await RequstApi.sendHttpRequest(requestParam);
-        } catch (e) {
-          alert(e.message);
-        }
-      })();*/
-      (async () => {
-        try {
-          let eventResponse = await RequstApi.sendHttpRequest(requestParam);
-          if (eventResponse.status === 200) {
-            this.$store.dispatch('fillModule', {'event': eventResponse});
-          }
-        } catch (e) {
-          alert(e.message);
-        }
-        try {
-          let eventResponse = await RequstApi.sendHttpRequest(new RequestEntity.RequestParam(new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, 'StateBean', 'getAlarmTemplate'), null));
-          if (eventResponse.status === 200) {
-            let data = eventResponse.response;
-            if (data.length > 0) {
-              let dataJson = JSON.parse(data);
-              let respData = dataJson.data;
-              let respError = dataJson.error;
-              if (!funcUtils.isNull(respData)) {
-                this.alarmTemplates = respData;
-              } else {
-                if (!funcUtils.isNull(respError)) {
-                  alert(respError.errorMsg);
-                }
-              }
-            }
-          }
-        } catch (e) {
-          alert(e.message);
-        }
-      })();
-    },
-    data() {
-      return {
-        status: null,
-        statusNames: null,
-        headerSwitch: false,
-        params: null,
-        alarmTemplates: null,
-        templateId: null,
-        levels: null,
-        levelId: null,
-        statuses: null,
-        statusId: null
-      }
-    },
-    computed: {
-      alarmRule: function () {
-        let res = {};
-        let data = this.$store.state.alarmRuleEdit.data;
-        if (data) {
-          this.statusId = funcUtils.lookupValue('statusNames', data.rule.status).value;
-          this.levelId = funcUtils.lookupValue('levelNames', data.rule.level).value;
-          this.levels = ConstantUtils.levelNames;
-          this.statuses = ConstantUtils.statusNames;
-          res = data.rule;
-        }
-        return res;
-      }
-    },
-    methods: {
-      saveAlarmRule: function () {
-        let res = this.alarmRule;
-        res.status = this.statusId;
-        res.level = this.levelId;
-        res.templateId = this.templateId;
-        let wid = sessionStorage.getItem('wid');
-        let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, 'saveAlarmRule');
-        let requestParam = new RequestEntity.RequestParam(requestHead, {data: res});
+      let cameraReestr = funcUtils.getfromLocalStorage('cameraReestr');
+      let getData = (methodName) => {
+        let cid = cameraReestr;
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.cameraReestr.bean, methodName);
+        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              this.$root.getAlarmRuleReestr();
+              this.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
           .catch(eventResponse => {
             alert(eventResponse.message);
           });
-      },
-      deleteAlarmRule: function () {
-        let wid = sessionStorage.getItem('wid');
-        let alarmRuleReestr = funcUtils.getfromLocalStorage('alarmRuleReestr');
-        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, alarmRuleReestr.alarmRuleEdit, this.$store.state.alarmRuleEdit.bean, 'deleteAlarmRule');
+      };
+      let wid = sessionStorage.getItem('wid');
+      if (funcUtils.isNull(cameraReestr)) {
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, null, this.$store.state.cameraReestr.bean, null);
         let requestParam = new RequestEntity.RequestParam(requestHead, null);
         RequstApi.sendHttpRequest(requestParam)
           .then(eventResponse => {
             if (eventResponse.status === 200) {
-              let response = JSON.parse(eventResponse.response);
-              if (response.data == true) {
-                this.$root.getAlarmRuleReestr();
+              let data = eventResponse.response;
+              if (data.length > 0) {
+                let dataJson = JSON.parse(data);
+                let respData = dataJson.data;
+                let respError = dataJson.error;
+                if (!funcUtils.isNull(respData)) {
+                  if (dataJson.method === 'addCID') {
+                    this.$store.dispatch('cameraReestrSetCid', respData.cid);
+                    cameraReestr = respData.cid;
+                    funcUtils.addToLocalStorage('cameraReestr', cameraReestr);
+                    getData('getData');
+                  }
+                } else {
+                  if (!funcUtils.isNull(respError)) {
+                    alert(respError.errorMsg);
+                  }
+                }
               }
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      } else {
+        getData('restore');
+      }
+      let self = this;
+      this.$store.watch(this.$store.getters.cameraReestrGetCommand, state => {
+        self.updateOnCommand(state);
+      })
+    },
+    data() {
+      return {
+        headerSwitch: false
+      }
+    },
+    computed: {
+      cameras: function() {
+        let res;
+        let data = this.$store.state.cameraReestr.data;
+        if (data) {
+          res = data.data;
+        }
+        return res;
+      }
+    },
+    methods: {
+      updateOnCommand: function (resp) {
+        let wid = sessionStorage.getItem('wid');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.cameraReestr.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
             }
           })
           .catch(eventResponse => {
@@ -347,7 +259,7 @@
         align-items: center;
         background: #28282e;
 
-        .dc-button-icon-small:last-child {
+        .dc-button-icon-small:last-child  {
           margin-left: 0;
           margin-top: 5px;
         }
@@ -384,7 +296,7 @@
 
     .dc-main-aside__logo {
       height: 64px;
-      background: #7e8c91 url("../assets/img/logo-menu.svg") no-repeat center;
+      background: #7e8c91 url("../../assets/img/logo-menu.svg") no-repeat center;
       background-size: 42px;
     }
 

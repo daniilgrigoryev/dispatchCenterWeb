@@ -12,6 +12,7 @@ import * as funcUtils from "./assets/js/utils/funcUtils";
 import './themes/element-theme-build/index.css'
 import './assets/js/vendor/vendor.js'
 import './components/SharedFilters/SharedFilters.vue'
+import * as ConstantUtils from './assets/js/utils/constantUtils';
 
 import moment from 'moment';
 moment.locale('ru');
@@ -65,6 +66,30 @@ let vue = new Vue({
     getAlarmRuleReestr: function () {
       this.clearToStart();
       funcUtils.getNextPage(this.$router, this.$store.state.alarmRuleReestr.routeName);
+    },
+    getAlarmReestr: function () {
+      this.clearToStart();
+      funcUtils.getNextPage(this.$router, this.$store.state.alarmReestr.routeName);
+    },
+    getCameraOrMapReestr: function (isMap) {
+      let vm = this;
+      this.clearToStart();
+      (async () => {
+        try {
+          let wid = sessionStorage.getItem('wid');
+          let cid = funcUtils.getfromLocalStorage('cameraReestr');
+          let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, this.$store.state.cameraReestr.bean, 'switchMap');
+          let requestParam = new RequestEntity.RequestParam(requestHead, {toMap: isMap});
+          let eventResponse = await RequstApi.sendHttpRequest(requestParam);
+          if (isMap) {
+            funcUtils.getNextPage(vm.$router, ConstantUtils.MAP_REESTR);
+          } else {
+            funcUtils.getNextPage(vm.$router, ConstantUtils.CAMERA_REESTR);
+          }
+        } catch (e) {
+          alert(e.message);
+        }
+      })();
     },
     getMonitorDict: function () {
       this.clearToStart();
