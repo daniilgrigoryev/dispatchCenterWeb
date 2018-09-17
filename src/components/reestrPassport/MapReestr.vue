@@ -54,7 +54,12 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <div id="object-map" class="dc-object-passport__map"></div>
+        <div id="cameras-map" class="dc-object-passport__map"></div>
+        <div style="width: 400px; height: calc(100vh - 32px); position: relative; background: black; opacity: 0.6;">
+          <div id="cameras-list" style="width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
+
+          </div>
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -154,7 +159,7 @@
         let vm = this;
         this.map = new mapboxgl.Map(
           {
-            container: 'object-map',
+            container: 'cameras-map',
             style: ConstantUtils.MAP_STYLE,
             center: [data.centerLng, data.centerLat],
             zoom: data.zoom,
@@ -215,13 +220,22 @@
           map.addLayer(layer);
         });
         map.on('click', 'points', (e) => {
-          console.log(e.features[0].properties.camera);
+          let camera = e.features[0].properties.camera;
+          if (funcUtils.isNotEmpty(camera)) {
+            let parsedCamera = JSON.parse(camera);
+            let camerasList = document.getElementById('cameras-list');
+            camerasList.innerHTML += `<div id="${parsedCamera.camera.id}" style="display: flex; flex-direction: column;"><span style="color: white; word-break: break-word;">${camera}</span><button style="color: white; border: 1px solid white" type="button" onclick="document.getElementById(${parsedCamera.camera.id}).remove();">Remove</button></div>`;
+          }
         });
         map.on('moveend', function () {
           let wid = sessionStorage.getItem('wid');
           let cid = funcUtils.getfromLocalStorage('cameraReestr');
           let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, cid, vm.$store.state.cameraReestr.bean, 'changeMap');
-          let requestParam = new RequestEntity.RequestParam(requestHead, {lat: vm.map.getCenter().lat, lng: vm.map.getCenter().lng, zoom: vm.map.getZoom()});
+          let requestParam = new RequestEntity.RequestParam(requestHead, {
+            lat: vm.map.getCenter().lat,
+            lng: vm.map.getCenter().lng,
+            zoom: vm.map.getZoom()
+          });
           RequstApi.sendHttpRequest(requestParam);
         });
       },
@@ -233,7 +247,6 @@
           coords[0] < northEastCoords.lng &&
           coords[1] > southWestCoords.lat &&
           coords[1] < northEastCoords.lat;
-
       }
     },
   }
@@ -508,10 +521,4 @@
       height: inherit;
     }
   }
-</style>
-}
-</script>
-
-<style scoped>
-
 </style>
