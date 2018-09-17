@@ -55,9 +55,10 @@
       <!--Область контента-->
       <el-main class="dc-page-content">
         <div id="cameras-map" class="dc-object-passport__map"></div>
-        <div style="width: 400px; height: calc(100vh - 32px); position: relative; background: black; opacity: 0.6;">
-          <div id="cameras-list" style="width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
-
+        <div id="cameras-list" style="width: 400px; height: calc(100vh - 32px); position: relative; background: black; opacity: 0.6; display: flex; flex-direction: column; overflow-y: auto;">
+          <div :id="camera.id" v-for="(camera, index) in selectedCameras" style="display: flex; flex-direction: column;">
+            <span style="color: white; word-break: break-word;">{{camera}}</span>
+            <button style="color: white; border: 1px solid white" type="button" @click="selectedCameras.splice(index, 1)">Remove</button>
           </div>
         </div>
       </el-main>
@@ -146,7 +147,8 @@
     data() {
       return {
         headerSwitch: false,
-        map: null
+        map: null,
+        selectedCameras: []
       }
     },
     computed: {
@@ -155,6 +157,20 @@
       }
     },
     methods: {
+      updateOnCommand: function (resp) {
+        let wid = sessionStorage.getItem('wid');
+        let requestHead = new RequestEntity.RequestHead(localStorage.getItem('sid'), wid, resp.cid, this.$store.state.cameraReestr.bean, 'restore');
+        let requestParam = new RequestEntity.RequestParam(requestHead, {filter: null});
+        RequstApi.sendHttpRequest(requestParam)
+          .then(eventResponse => {
+            if (eventResponse.status === 200) {
+              this.$store.dispatch('fillModule', {'event': eventResponse});
+            }
+          })
+          .catch(eventResponse => {
+            alert(eventResponse.message);
+          });
+      },
       createMap: function (data) {
         let vm = this;
         this.map = new mapboxgl.Map(
@@ -222,9 +238,7 @@
         map.on('click', 'points', (e) => {
           let camera = e.features[0].properties.camera;
           if (funcUtils.isNotEmpty(camera)) {
-            let parsedCamera = JSON.parse(camera);
-            let camerasList = document.getElementById('cameras-list');
-            camerasList.innerHTML += `<div id="${parsedCamera.camera.id}" style="display: flex; flex-direction: column;"><span style="color: white; word-break: break-word;">${camera}</span><button style="color: white; border: 1px solid white" type="button" onclick="document.getElementById(${parsedCamera.camera.id}).remove();">Remove</button></div>`;
+            vm.selectedCameras.push(JSON.parse(camera));
           }
         });
         map.on('moveend', function () {
@@ -236,7 +250,7 @@
             lng: vm.map.getCenter().lng,
             zoom: vm.map.getZoom()
           });
-          RequstApi.sendHttpRequest(requestParam);
+          RequstApi.sendHttpRequest(requestParam, false);
         });
       },
       // проверяет, входит ли заданная точка в область видимо экрана на карте
