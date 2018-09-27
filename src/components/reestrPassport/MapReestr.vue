@@ -266,16 +266,16 @@
           '</svg>';
 
         let all = num;
-        let rad = 20;
-        let rw = 15;
-        /*if (all < 10) {
+        let rad = 25;
+        let rw = 12;
+        if (all < 10) {
           rad = 16;
           rw = 9;
         } else if (all < 30) {
           rad = 20;
         } else if (all < 60) {
           rad = 23;
-        }*/
+        }
 
         if (st1 === 0 && st2 === 0 && st3 === 0 && st4 === 0 && st5 === 0 && st0 > 0) {
           pieIcon = pieIcon.replace('circleColor', '#FFFFFF');
