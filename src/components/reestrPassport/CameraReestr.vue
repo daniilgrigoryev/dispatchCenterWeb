@@ -54,16 +54,11 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <table>
-          <thead>
-
-          </thead>
-          <tbody>
-            <tr v-for="camera in cameras">
-
-            </tr>
-          </tbody>
-        </table>
+        <div id="floatTheadWrapper" style="height: calc(100vh - 32px); overflow-y: auto;">
+          <p v-for="camera in cameras">
+            {{camera}}
+          </p>
+        </div>
       </el-main>
       <!--/Область контента-->
     </el-container>
@@ -134,22 +129,30 @@
       } else {
         getData('restore');
       }
-      let self = this;
+      let vm = this;
       this.$store.watch(this.$store.getters.cameraReestrGetCommand, state => {
-        self.updateOnCommand(state);
-      })
+        vm.updateOnCommand(state);
+      });
+      let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+      if (funcUtils.isNotEmpty(floatTheadWrapper)) {
+        floatTheadWrapper.addEventListener('scroll', this.handleScroll);
+      }
     },
     data() {
       return {
-        headerSwitch: false
+        headerSwitch: false,
+        scrollCount: 40
       }
     },
     computed: {
       cameras: function() {
-        let res;
+        let res = [];
         let data = this.$store.state.cameraReestr.data;
         if (data) {
-          res = data.data;
+          let cameras = data.data;
+          for (let i = 0; i < this.scrollCount; i++) {
+            res.push(cameras[i]);
+          }
         }
         return res;
       }
@@ -168,6 +171,12 @@
           .catch(eventResponse => {
             alert(eventResponse.message);
           });
+      },
+      handleScroll() {
+        let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+        if( floatTheadWrapper.offsetHeight + floatTheadWrapper.scrollTop >= floatTheadWrapper.scrollHeight ) {
+          this.scrollCount += 40;
+        }
       }
     }
   }

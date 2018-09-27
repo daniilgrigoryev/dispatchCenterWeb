@@ -54,16 +54,11 @@
 
       <!--Область контента-->
       <el-main class="dc-page-content">
-        <table>
-          <thead>
-
-          </thead>
-          <tbody>
-            <tr v-for="alarm in alarms">
-
-            </tr>
-          </tbody>
-        </table>
+        <div id="floatTheadWrapper" style="height: calc(100vh - 32px); overflow-y: auto;">
+          <p v-for="alarm in alarms">
+            {{alarm}}
+          </p>
+        </div>
       </el-main>
       <!--/Область контента-->
     </el-container>
@@ -94,7 +89,7 @@
           filter: null,
           active: false,
           levels: null,
-          dateBeg: null,
+          dateBeg: new Date('08/01/2018').getTime(),
           dateEnd: null
         });
         RequstApi.sendHttpRequest(requestParam)
@@ -140,22 +135,30 @@
       } else {
         getData('restore');
       }
-      let self = this;
+      let vm = this;
       this.$store.watch(this.$store.getters.alarmReestrGetCommand, state => {
-        self.updateOnCommand(state);
-      })
+        vm.updateOnCommand(state);
+      });
+      let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+      if (funcUtils.isNotEmpty(floatTheadWrapper)) {
+        floatTheadWrapper.addEventListener('scroll', this.handleScroll);
+      }
     },
     data() {
       return {
-        headerSwitch: false
+        headerSwitch: false,
+        scrollCount: 40
       }
     },
     computed: {
       alarms: function() {
-        let res;
+        let res = [];
         let data = this.$store.state.alarmReestr.data;
         if (data) {
-          res = data.data;
+          let alarms = data.alarms;
+          for (let i = 0; i < this.scrollCount; i++) {
+            res.push(alarms[i]);
+          }
         }
         return res;
       }
@@ -174,6 +177,12 @@
           .catch(eventResponse => {
             alert(eventResponse.message);
           });
+      },
+      handleScroll() {
+        let floatTheadWrapper = document.getElementById('floatTheadWrapper');
+        if( floatTheadWrapper.offsetHeight + floatTheadWrapper.scrollTop >= floatTheadWrapper.scrollHeight ) {
+          this.scrollCount += 40;
+        }
       }
     }
   }
