@@ -55,7 +55,7 @@
       <!--Область контента-->
       <el-main class="dc-page-content">
         <div id="floatTheadWrapper" style="height: calc(100vh - 32px); overflow-y: auto;">
-          <p v-for="alarm in alarms">
+          <p style="border: 1px solid white; padding: 20px; margin-bottom: 20px;" v-for="alarm in alarms">
             {{alarm}}
           </p>
         </div>
