@@ -451,6 +451,7 @@
         });
       },
       selectCamera: function (camera) {
+        let zoom = 15;
         this.clearSelectedCamera();
         this.selectedCameras.push(camera.camera.id);
         let cameraInCluster = this.cameraInCluster(camera.camera.id);
@@ -763,8 +764,22 @@
         document.querySelectorAll('.marker').forEach(function (marker) {
           marker.remove();
         });
+        let camerasCoords = {};
         let cameras = data.data.filter((item) => {
-          return vm.isVisible([item.camera.lng, item.camera.lat]);
+          if (vm.isVisible([item.camera.lng, item.camera.lat])) {
+            let coord = camerasCoords[item.camera.lng];
+            if (!coord) {
+              coord = {
+                lat: item.camera.lat,
+                marginTop: 6
+              };
+            } else if (coord.lat === item.camera.lat) {
+              item.marginTop = coord.marginTop;
+              coord.marginTop += 6;
+            }
+            camerasCoords[item.camera.lng] = coord;
+            return item;
+          }
         });
         cameras.forEach((camera) => {
           let feature = {
@@ -785,6 +800,10 @@
           }
           let el = document.createElement('div');
           el.className = 'marker';
+          if (camera.marginTop) {
+            el.style.marginTop = camera.marginTop + 'px';
+          }
+          el.innerHTML += '<div style="transform: rotate(' + camera.camera.azimuth + 'deg)" class="azimuth"></div>';
           el.setAttribute('id', camera.camera.id);
           el.setAttribute('levelCamera', levelCamera);
 
@@ -945,6 +964,7 @@
     width: 20px;
     height: 20px;
     z-index: 2;
+    cursor: default;
 
     &.iconCameraLev1 {
       background: url('../../assets/img/map-cam-b-level-1.svg') no-repeat center;
@@ -973,6 +993,16 @@
     &.iconCameraSelected {
       background: url('../../assets/img/camera-select-map.svg') no-repeat center !important;
       z-index: 3 !important;
+    }
+
+    .azimuth {
+      background: url('../../assets/img/map-cam-azimuth-green.svg') no-repeat center !important;
+      z-index: 1 !important;
+      position: relative;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
     }
   }
 
