@@ -55,10 +55,18 @@
       <!--Область контента-->
       <el-main class="dc-page-content">
         <el-radio-group v-model="cameraColors"
-                        style="position: absolute; left: 45%; z-index: 10;background: black; top: 40px;">
+                        style="position: absolute; left: 45%; z-index: 10; background: black; top: 40px;">
           <el-radio :label="1">По последнему алерту</el-radio>
           <el-radio :label="2">По максимальному уровню алерта</el-radio>
         </el-radio-group>
+
+        <el-slider
+          v-model="showLevels"
+          style="position: absolute; left: 45%; z-index: 10 ;background: black; top: 80px; width: 18%;"
+          range
+          :max="5">
+        </el-slider>
+
         <div id="cameras-map" class="dc-object-passport__map"></div>
         <div id="cameras-list"
              style="width: 400px; height: calc(100vh - 32px); position: relative; background: black; opacity: 0.6; display: flex; flex-direction: column; overflow-y: auto; z-index: 3">
@@ -170,6 +178,7 @@
         selectedCameras: [],
         scrollCount: 40,
         cameraColors: 1,
+        showLevels: [0, 5],
         mapCoord: {},
         layers: {},
         clusterLayers: {},
@@ -198,6 +207,10 @@
     watch: {
       // whenever question changes, this function will run
       cameraColors: function () {
+        this.drawCluster();
+        this.drawCameras();
+      },
+      showLevels () {
         this.drawCluster();
         this.drawCameras();
       }
@@ -654,199 +667,219 @@
         }
       },
       drawCluster() {
-        this.observersSuperCluster = supercluster({
-          maxZoom: 13,
-          radius: 100,
-          initial: function () {
-            return {
-              status0: 0,
-              status1: 0,
-              status2: 0,
-              status3: 0,
-              status4: 0,
-              status5: 0,
-              selectedCount: 0
-            }
-          },
-          map: function (props) {
-            return {
-              status0: props.levelCamera === 0 ? 1 : 0,
-              status1: props.levelCamera === 1 ? 1 : 0,
-              status2: props.levelCamera === 2 ? 1 : 0,
-              status3: props.levelCamera === 3 ? 1 : 0,
-              status4: props.levelCamera === 4 ? 1 : 0,
-              status5: props.levelCamera === 5 ? 1 : 0,
-              selectedCount: props.selectedCount === 1 ? 1 : 0
-            }
-          },
-          reduce: function (accumulated, props) {
-            accumulated.status0 += props.status0;
-            accumulated.status1 += props.status1;
-            accumulated.status2 += props.status2;
-            accumulated.status3 += props.status3;
-            accumulated.status4 += props.status4;
-            accumulated.status5 += props.status5;
-            accumulated.selectedCount += props.selectedCount;
-          }
-        });
-        document.querySelectorAll('.cluster').forEach(function (cluster) {
-          cluster.remove();
-        });
-        let vm = this;
-        this.cameraIdsInClusters = [];
-        let clusterFeatures = [];
         let data = this.$store.state.cameraReestr.data;
-        let cameras = data.data.filter((item) => {
-          return vm.isVisible([item.camera.lng, item.camera.lat]);
-        });
-        cameras.forEach((camera) => {
-          let levelCamera;
-          if (!funcUtils.isNull(camera.lastAlarm) && !funcUtils.isNull(camera.maxAlarm)) {
-            levelCamera = vm.cameraColors === 1 ? camera.lastAlarm.level : camera.maxAlarm.level;
-          } else {
-            levelCamera = 0;
-          }
-          let feature = {
-            'properties': {
-              "camera": camera,
-              "levelCamera": levelCamera,
-              "selectedCount": vm.selectedCameras.includes(camera.camera.id) ? 1 : 0,
+        if (data) {
+          this.observersSuperCluster = supercluster({
+            maxZoom: 13,
+            radius: 100,
+            initial: function () {
+              return {
+                status0: 0,
+                status1: 0,
+                status2: 0,
+                status3: 0,
+                status4: 0,
+                status5: 0,
+                selectedCount: 0
+              }
             },
-            "type": "Feature",
-            "geometry": {
-              "type": "Point",
-              "coordinates": [camera.camera.lng, camera.camera.lat]
+            map: function (props) {
+              return {
+                status0: props.levelCamera === 0 ? 1 : 0,
+                status1: props.levelCamera === 1 ? 1 : 0,
+                status2: props.levelCamera === 2 ? 1 : 0,
+                status3: props.levelCamera === 3 ? 1 : 0,
+                status4: props.levelCamera === 4 ? 1 : 0,
+                status5: props.levelCamera === 5 ? 1 : 0,
+                selectedCount: props.selectedCount === 1 ? 1 : 0
+              }
+            },
+            reduce: function (accumulated, props) {
+              accumulated.status0 += props.status0;
+              accumulated.status1 += props.status1;
+              accumulated.status2 += props.status2;
+              accumulated.status3 += props.status3;
+              accumulated.status4 += props.status4;
+              accumulated.status5 += props.status5;
+              accumulated.selectedCount += props.selectedCount;
             }
-          };
-          clusterFeatures.push(feature);
-        });
-        this.observersSuperCluster.load(clusterFeatures);
-        vm.getClusterFeatures().forEach(item => {
-          let cluster_id = item.properties.cluster_id;
-          if (cluster_id != null) { // если это кластер
-            let selected = item.properties.selectedCount === 1;
-            let el = document.createElement('div');
-            el.className += 'cluster';
-            if (selected) {
-              el.id = cluster_id;
-              el.setAttribute('selected', selected);
-            }
-            let full = item.properties.status0 + item.properties.status1 + item.properties.status2 + item.properties.status3 + item.properties.status4 + item.properties.status5;
-            let status0 = item.properties.status0 * 100 / full * 3.6;
-            let status1 = item.properties.status1 * 100 / full * 3.6;
-            let status2 = item.properties.status2 * 100 / full * 3.6;
-            let status3 = item.properties.status3 * 100 / full * 3.6;
-            let status4 = item.properties.status4 * 100 / full * 3.6;
-            let status5 = item.properties.status5 * 100 / full * 3.6;
-            // el.innerHTML = this.getHtmlForCluster(item.properties.point_count, status0, status1, status2, status3, status4, status5);
-            let img_str = this.getPieSvg(item.properties.point_count, item.properties.status0, item.properties.status1, item.properties.status2, item.properties.status3, item.properties.status4, item.properties.status5, selected);
-            el.innerHTML = '<p>' + item.properties.point_count +'</p>' +
-                           '<img src="data:image/svg+xml,' + escape(img_str) + '" />';
-            /*var mysvg = new Image();
-            mysvg.src = 'data:image/svg+xml,' + escape(img_str);
-            el.src = 'data:image/svg+xml,' + escape(svg);*/
-            new mapboxgl.Marker(el)
-              .setLngLat(item.geometry.coordinates)
-              .addTo(vm.map);
-            el.addEventListener('click', function () {
-              vm.selectCluster(item);
-            });
-            vm.observersSuperCluster.getLeaves(cluster_id, Infinity).forEach(item2 => {
-              vm.cameraIdsInClusters.push(item2.properties.camera.camera.id);
-            });
+          });
+          document.querySelectorAll('.cluster').forEach(function (cluster) {
+            cluster.remove();
+          });
+          let vm = this;
+          this.cameraIdsInClusters = [];
+          let clusterFeatures = [];
+          let cameras = data.data.filter((item) => {
+            return vm.isVisible([item.camera.lng, item.camera.lat]);
+          });
+          let cameraBylevels = [];
+          let first = this.showLevels[0];
+          let end = this.showLevels[1];
+          for (let i = first; i <= end; i++) {
+            cameraBylevels.push(i);
           }
-        });
+          for (let i = 0; i < cameras.length; i++) {
+            let camera = cameras[i];
+            let levelCamera;
+            if (!funcUtils.isNull(camera.lastAlarm) && !funcUtils.isNull(camera.maxAlarm)) {
+              levelCamera = vm.cameraColors === 1 ? camera.lastAlarm.level : camera.maxAlarm.level;
+            } else {
+              levelCamera = 0;
+            }
+            if (!cameraBylevels.includes(levelCamera)) continue;
+            let feature = {
+              'properties': {
+                "camera": camera,
+                "levelCamera": levelCamera,
+                "selectedCount": vm.selectedCameras.includes(camera.camera.id) ? 1 : 0,
+              },
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [camera.camera.lng, camera.camera.lat]
+              }
+            };
+            clusterFeatures.push(feature);
+          }
+          this.observersSuperCluster.load(clusterFeatures);
+          vm.getClusterFeatures().forEach(item => {
+            let cluster_id = item.properties.cluster_id;
+            if (cluster_id != null) { // если это кластер
+              let selected = item.properties.selectedCount === 1;
+              let el = document.createElement('div');
+              el.className += 'cluster';
+              if (selected) {
+                el.id = cluster_id;
+                el.setAttribute('selected', selected);
+              }
+              let full = item.properties.status0 + item.properties.status1 + item.properties.status2 + item.properties.status3 + item.properties.status4 + item.properties.status5;
+              let status0 = item.properties.status0 * 100 / full * 3.6;
+              let status1 = item.properties.status1 * 100 / full * 3.6;
+              let status2 = item.properties.status2 * 100 / full * 3.6;
+              let status3 = item.properties.status3 * 100 / full * 3.6;
+              let status4 = item.properties.status4 * 100 / full * 3.6;
+              let status5 = item.properties.status5 * 100 / full * 3.6;
+              // el.innerHTML = this.getHtmlForCluster(item.properties.point_count, status0, status1, status2, status3, status4, status5);
+              let img_str = this.getPieSvg(item.properties.point_count, item.properties.status0, item.properties.status1, item.properties.status2, item.properties.status3, item.properties.status4, item.properties.status5, selected);
+              el.innerHTML = '<p>' + item.properties.point_count +'</p>' +
+                '<img src="data:image/svg+xml,' + escape(img_str) + '" />';
+              /*var mysvg = new Image();
+              mysvg.src = 'data:image/svg+xml,' + escape(img_str);
+              el.src = 'data:image/svg+xml,' + escape(svg);*/
+              new mapboxgl.Marker(el)
+                .setLngLat(item.geometry.coordinates)
+                .addTo(vm.map);
+              el.addEventListener('click', function () {
+                vm.selectCluster(item);
+              });
+              vm.observersSuperCluster.getLeaves(cluster_id, Infinity).forEach(item2 => {
+                vm.cameraIdsInClusters.push(item2.properties.camera.camera.id);
+              });
+            }
+          });
+        }
       },
       drawCameras() {
-        let vm = this;
         let data = this.$store.state.cameraReestr.data;
-        let selectedCameras = this.selectedCameras;
-        document.querySelectorAll('.marker').forEach(function (marker) {
-          marker.remove();
-        });
-        let camerasCoords = {};
-        let cameras = data.data.filter((item) => {
-          if (vm.isVisible([item.camera.lng, item.camera.lat])) {
-            let coord = camerasCoords[item.camera.lng];
-            if (!coord) {
-              coord = {
-                lat: item.camera.lat,
-                marginTop: 6
-              };
-            } else if (coord.lat === item.camera.lat) {
-              item.marginTop = coord.marginTop;
-              coord.marginTop += 6;
-            }
-            camerasCoords[item.camera.lng] = coord;
-            return item;
-          }
-        });
-        cameras.forEach((camera) => {
-          let feature = {
-            'properties': {
-              "camera": camera
-            },
-            "type": "Feature",
-            "geometry": {
-              "type": "Point",
-              "coordinates": [camera.camera.lng, camera.camera.lat]
-            }
-          };
-          let levelCamera;
-          if (!funcUtils.isNull(camera.lastAlarm) && !funcUtils.isNull(camera.maxAlarm)) {
-            levelCamera = this.cameraColors === 1 ? camera.lastAlarm.level : camera.maxAlarm.level;
-          } else {
-            levelCamera = 0;
-          }
-          let el = document.createElement('div');
-          el.className = 'marker';
-          if (camera.marginTop) {
-            el.style.marginTop = camera.marginTop + 'px';
-          }
-          el.innerHTML += '<div style="transform: rotate(' + camera.camera.azimuth + 'deg)" class="azimuth"></div>';
-          el.setAttribute('id', camera.camera.id);
-          el.setAttribute('levelCamera', levelCamera);
-
-          switch (levelCamera) {
-            case 1: {
-              el.className += ' iconCameraLev1';
-              break;
-            }
-            case 2: {
-              el.className += ' iconCameraLev2';
-              break;
-            }
-            case 3: {
-              el.className += ' iconCameraLev3';
-              break;
-            }
-            case 4: {
-              el.className += ' iconCameraLev4';
-              break;
-            }
-            case 5: {
-              el.className += ' iconCameraLev5';
-              break;
-            }
-            default: {
-              el.className += ' iconCamera';
-              break;
-            }
-          }
-
-          el.addEventListener('click', function () {
-            vm.selectCamera(camera);
+        if (data) {
+          let vm = this;
+          let selectedCameras = this.selectedCameras;
+          document.querySelectorAll('.marker').forEach(function (marker) {
+            marker.remove();
           });
-
-          if (!vm.cameraIdsInClusters.includes(camera.camera.id)) {
-            if (selectedCameras.includes(camera.camera.id)) {
-              el.className += ' iconCameraSelected';
+          let camerasCoords = {};
+          let cameras = data.data.filter((item) => {
+            if (vm.isVisible([item.camera.lng, item.camera.lat])) {
+              let coord = camerasCoords[item.camera.lng];
+              if (!coord) {
+                coord = {
+                  lat: item.camera.lat,
+                  marginTop: 6
+                };
+              } else if (coord.lat === item.camera.lat) {
+                item.marginTop = coord.marginTop;
+                coord.marginTop += 6;
+              }
+              camerasCoords[item.camera.lng] = coord;
+              return item;
             }
-            new mapboxgl.Marker(el)
-              .setLngLat(feature.geometry.coordinates)
-              .addTo(vm.map);
+          });
+          let cameraBylevels = [];
+          let first = this.showLevels[0];
+          let end = this.showLevels[1];
+          for (let i = first; i <= end; i++) {
+            cameraBylevels.push(i);
           }
-        });
+          for (let i = 0; i < cameras.length; i++) {
+            let camera = cameras[i];
+            let feature = {
+              'properties': {
+                "camera": camera
+              },
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [camera.camera.lng, camera.camera.lat]
+              }
+            };
+            let levelCamera;
+            if (!funcUtils.isNull(camera.lastAlarm) && !funcUtils.isNull(camera.maxAlarm)) {
+              levelCamera = this.cameraColors === 1 ? camera.lastAlarm.level : camera.maxAlarm.level;
+            } else {
+              levelCamera = 0;
+            }
+            if (!cameraBylevels.includes(levelCamera)) continue;
+            let el = document.createElement('div');
+            el.className = 'marker';
+            if (camera.marginTop) {
+              el.style.marginTop = camera.marginTop + 'px';
+            }
+            el.innerHTML += '<div style="transform: rotate(' + camera.camera.azimuth + 'deg)" class="azimuth"></div>';
+            el.setAttribute('id', camera.camera.id);
+            el.setAttribute('levelCamera', levelCamera);
+
+            switch (levelCamera) {
+              case 1: {
+                el.className += ' iconCameraLev1';
+                break;
+              }
+              case 2: {
+                el.className += ' iconCameraLev2';
+                break;
+              }
+              case 3: {
+                el.className += ' iconCameraLev3';
+                break;
+              }
+              case 4: {
+                el.className += ' iconCameraLev4';
+                break;
+              }
+              case 5: {
+                el.className += ' iconCameraLev5';
+                break;
+              }
+              default: {
+                el.className += ' iconCamera';
+                break;
+              }
+            }
+
+            el.addEventListener('click', function () {
+              vm.selectCamera(camera);
+            });
+
+            if (!vm.cameraIdsInClusters.includes(camera.camera.id)) {
+              if (selectedCameras.includes(camera.camera.id)) {
+                el.className += ' iconCameraSelected';
+              }
+              new mapboxgl.Marker(el)
+                .setLngLat(feature.geometry.coordinates)
+                .addTo(vm.map);
+            }
+          }
+        }
       },
       addImage() {
         let poiSelected = new Image(52, 52);
